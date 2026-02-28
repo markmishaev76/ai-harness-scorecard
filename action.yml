@@ -1,0 +1,61 @@
+name: 'AI Harness Scorecard'
+description: 'Grade repositories on engineering safeguards for safe AI-assisted development'
+author: 'Mark Mishaev'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Path to the repository to assess'
+    required: false
+    default: '.'
+  format:
+    description: 'Output format: markdown, json, or terminal'
+    required: false
+    default: 'markdown'
+  output-file:
+    description: 'File path for the report output'
+    required: false
+    default: 'scorecard-report.md'
+
+outputs:
+  grade:
+    description: 'Letter grade (A/B/C/D/F)'
+    value: ${{ steps.assess.outputs.grade }}
+  score:
+    description: 'Numeric score (0-100)'
+    value: ${{ steps.assess.outputs.score }}
+  report-path:
+    description: 'Path to the generated report file'
+    value: ${{ steps.assess.outputs.report_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install ai-harness-scorecard
+      shell: bash
+      run: pip install "${{ github.action_path }}"
+
+    - name: Run assessment
+      id: assess
+      shell: bash
+      run: |
+        ai-harness-scorecard assess "${{ inputs.path }}" \
+          --format "${{ inputs.format }}" \
+          -o "${{ inputs.output-file }}" 2>/dev/null
+
+        # Extract grade and score from JSON for outputs
+        JSON=$(ai-harness-scorecard assess "${{ inputs.path }}" --format json 2>/dev/null)
+        GRADE=$(echo "$JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['grade'])")
+        SCORE=$(echo "$JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['overall_score'])")
+
+        echo "grade=$GRADE" >> "$GITHUB_OUTPUT"
+        echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+        echo "report_path=${{ inputs.output-file }}" >> "$GITHUB_OUTPUT"

@@ -72,6 +72,44 @@ Good foundation. Some gaps in enforcement or feedback loops.
 └──────────────────────────┴────────┴───────┴────────┘
 ```
 
+## Use as GitHub Action
+
+Add the scorecard to any repository's CI with a one-liner:
+
+```yaml
+name: AI Harness Scorecard
+on: [push, pull_request]
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: markmishaev76/ai-harness-scorecard@v1
+        id: scorecard
+      - run: echo "Grade ${{ steps.scorecard.outputs.grade }} (${{ steps.scorecard.outputs.score }}/100)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-report
+          path: scorecard-report.md
+```
+
+**Inputs:**
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| `path` | `.` | Path to the repository to assess |
+| `format` | `markdown` | Output format: `markdown`, `json`, or `terminal` |
+| `output-file` | `scorecard-report.md` | File path for the report |
+
+**Outputs:**
+
+| Output | Description |
+|--------|-------------|
+| `grade` | Letter grade (A/B/C/D/F) |
+| `score` | Numeric score (0-100) |
+| `report-path` | Path to the generated report file |
+
 ## Platform Support
 
 Works on any cloned Git repository (GitHub, GitLab, Bitbucket, self-hosted). Most checks are file-based and platform-independent.
@@ -97,7 +135,7 @@ ai-harness-scorecard assess gitlab:group/project
 
 ```bash
 # Clone
-git clone https://github.com/markmishaev/ai-harness-scorecard
+git clone https://github.com/markmishaev76/ai-harness-scorecard
 cd ai-harness-scorecard
 
 # Install dev dependencies
