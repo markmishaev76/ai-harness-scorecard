@@ -48,9 +48,16 @@ def assess(path: str, output_format: str, output_file: str | None) -> None:
     """Assess a repository against AI-assisted development best practices."""
     repo_path = Path(path).resolve()
 
-    console.print(f"\n[bold]Assessing:[/bold] {repo_path}\n")
+    is_terminal = output_format == "terminal" and output_file is None
 
-    with console.status("[bold green]Running checks..."):
+    stderr_console = Console(stderr=True)
+    if is_terminal or output_file:
+        stderr_console.print(f"\n[bold]Assessing:[/bold] {repo_path}\n")
+
+    if is_terminal:
+        with console.status("[bold green]Running checks..."):
+            assessment = assess_repo(repo_path)
+    else:
         assessment = assess_repo(repo_path)
 
     if output_format == "json":
