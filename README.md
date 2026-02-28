@@ -1,5 +1,7 @@
 # AI Harness Scorecard
 
+[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2Fai-harness-scorecard%2Fmain%2Fscorecard-badge.json)](https://github.com/markmishaev76/ai-harness-scorecard)
+
 Grade any Git repository on its engineering safeguards for safe AI-assisted development.
 
 Not "is this repo ready for agents?" but rather: **"will the code agents produce here be reliable?"**
