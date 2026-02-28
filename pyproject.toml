@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-harness-scorecard"
+version = "0.1.0"
+description = "Grade repositories on engineering best practices for safe AI-assisted development"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Mark Mishaev" }]
+keywords = ["ai", "scorecard", "engineering", "best-practices", "harness"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "jinja2>=3.1",
+]
+
+[project.optional-dependencies]
+github = ["PyGithub>=2.0"]
+gitlab = ["python-gitlab>=4.0"]
+all = ["ai-harness-scorecard[github,gitlab]"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+ai-harness-scorecard = "ai_harness_scorecard.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_harness_scorecard"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
