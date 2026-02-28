@@ -9,6 +9,7 @@ from rich.console import Console
 from rich.table import Table
 
 from .models import Grade
+from .reporters.badge import render_badge_json
 from .reporters.json_reporter import render_json
 from .reporters.markdown import render_markdown
 from .scanner import assess_repo
@@ -44,7 +45,13 @@ def main() -> None:
     default=None,
     help="Write report to file instead of stdout.",
 )
-def assess(path: str, output_format: str, output_file: str | None) -> None:
+@click.option(
+    "--badge", "badge_file",
+    type=click.Path(),
+    default=None,
+    help="Write shields.io endpoint badge JSON to this file.",
+)
+def assess(path: str, output_format: str, output_file: str | None, badge_file: str | None) -> None:
     """Assess a repository against AI-assisted development best practices."""
     repo_path = Path(path).resolve()
 
@@ -59,6 +66,13 @@ def assess(path: str, output_format: str, output_file: str | None) -> None:
             assessment = assess_repo(repo_path)
     else:
         assessment = assess_repo(repo_path)
+
+    if badge_file:
+        badge_path = Path(badge_file)
+        badge_path.parent.mkdir(parents=True, exist_ok=True)
+        badge_path.write_text(render_badge_json(assessment), encoding="utf-8")
+        if is_terminal:
+            stderr_console.print(f"[dim]Badge written to {badge_file}[/dim]")
 
     if output_format == "json":
         report = render_json(assessment)

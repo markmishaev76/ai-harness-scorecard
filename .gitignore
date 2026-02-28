@@ -16,3 +16,4 @@ htmlcov/
 .coverage
 *.so
 .DS_Store
+labkit-rs-report.md

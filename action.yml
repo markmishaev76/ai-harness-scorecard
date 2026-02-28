@@ -19,6 +19,10 @@ inputs:
     description: 'File path for the report output'
     required: false
     default: 'scorecard-report.md'
+  badge-file:
+    description: 'File path for the shields.io endpoint badge JSON (set empty to skip)'
+    required: false
+    default: 'scorecard-badge.json'
 
 outputs:
   grade:
@@ -30,6 +34,9 @@ outputs:
   report-path:
     description: 'Path to the generated report file'
     value: ${{ steps.assess.outputs.report_path }}
+  badge-path:
+    description: 'Path to the generated badge JSON file'
+    value: ${{ steps.assess.outputs.badge_path }}
 
 runs:
   using: 'composite'
@@ -49,9 +56,16 @@ runs:
       run: |
         mkdir -p "$(dirname "${{ inputs.output-file }}")"
 
+        BADGE_ARG=""
+        if [ -n "${{ inputs.badge-file }}" ]; then
+          mkdir -p "$(dirname "${{ inputs.badge-file }}")"
+          BADGE_ARG="--badge ${{ inputs.badge-file }}"
+        fi
+
         ai-harness-scorecard assess "${{ inputs.path }}" \
           --format "${{ inputs.format }}" \
-          -o "${{ inputs.output-file }}"
+          -o "${{ inputs.output-file }}" \
+          $BADGE_ARG
 
         JSON=$(ai-harness-scorecard assess "${{ inputs.path }}" --format json)
         GRADE=$(echo "$JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['grade'])")
@@ -60,3 +74,4 @@ runs:
         echo "grade=$GRADE" >> "$GITHUB_OUTPUT"
         echo "score=$SCORE" >> "$GITHUB_OUTPUT"
         echo "report_path=${{ inputs.output-file }}" >> "$GITHUB_OUTPUT"
+        echo "badge_path=${{ inputs.badge-file }}" >> "$GITHUB_OUTPUT"

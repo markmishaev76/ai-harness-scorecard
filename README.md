@@ -72,27 +72,61 @@ Good foundation. Some gaps in enforcement or feedback loops.
 └──────────────────────────┴────────┴───────┴────────┘
 ```
 
+## Badge
+
+Display your score as a badge in your README, powered by [shields.io](https://shields.io):
+
+![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2Fai-harness-scorecard%2Fmain%2Fscorecard-badge.json)
+
+**Setup:**
+
+1. Add the GitHub Action to your repo (see below) with badge generation enabled (on by default)
+2. The action creates a `scorecard-badge.json` in your repo -- commit it
+3. Add the badge to your README:
+
+```markdown
+[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FOWNER%2FREPO%2Fmain%2Fscorecard-badge.json)](https://github.com/markmishaev76/ai-harness-scorecard)
+```
+
+Replace `OWNER` and `REPO` with your GitHub username and repository name.
+
+**CLI:**
+
+```bash
+ai-harness-scorecard assess . --badge scorecard-badge.json
+```
+
 ## Use as GitHub Action
 
 Add the scorecard to any repository's CI with a one-liner:
 
 ```yaml
 name: AI Harness Scorecard
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # weekly
 
 jobs:
   scorecard:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: markmishaev76/ai-harness-scorecard@v1
         id: scorecard
-      - run: echo "Grade ${{ steps.scorecard.outputs.grade }} (${{ steps.scorecard.outputs.score }}/100)"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: scorecard-report
-          path: scorecard-report.md
+      - name: Commit badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scorecard-badge.json
+          git diff --cached --quiet || git commit -m "chore: update scorecard badge"
+          git push
 ```
+
+The action generates `scorecard-badge.json` by default. The workflow above commits it so shields.io can read it from raw.githubusercontent.com.
 
 **Inputs:**
 
@@ -101,6 +135,7 @@ jobs:
 | `path` | `.` | Path to the repository to assess |
 | `format` | `markdown` | Output format: `markdown`, `json`, or `terminal` |
 | `output-file` | `scorecard-report.md` | File path for the report |
+| `badge-file` | `scorecard-badge.json` | File path for the shields.io badge JSON (set empty to skip) |
 
 **Outputs:**
 
@@ -109,6 +144,7 @@ jobs:
 | `grade` | Letter grade (A/B/C/D/F) |
 | `score` | Numeric score (0-100) |
 | `report-path` | Path to the generated report file |
+| `badge-path` | Path to the generated badge JSON file |
 
 ## Platform Support
 
