@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from ..models import Assessment
+from ..models import Assessment, CategoryResult, CheckResult
 
 
 def render_json(assessment: Assessment) -> str:
@@ -27,7 +27,7 @@ def _serialize(assessment: Assessment) -> dict:
     }
 
 
-def _serialize_category(category) -> dict:
+def _serialize_category(category: CategoryResult) -> dict[str, object]:
     return {
         "category_id": category.category_id,
         "name": category.name,
@@ -39,7 +39,7 @@ def _serialize_category(category) -> dict:
     }
 
 
-def _serialize_check(check) -> dict:
+def _serialize_check(check: CheckResult) -> dict[str, object]:
     return {
         "check_id": check.check_id,
         "name": check.name,

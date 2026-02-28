@@ -18,8 +18,11 @@ class AIUsageNormsCheck(BaseCheck):
     source = "DORA 2025 - clear organizational stance on AI use"
 
     AI_NORM_FILES = [
-        "claude.md", "agents.md", "contributing.md",
-        "docs/ai-*.md", "docs/development.md",
+        "claude.md",
+        "agents.md",
+        "contributing.md",
+        "docs/ai-*.md",
+        "docs/development.md",
         ".cursor/rules/*.mdc",
     ]
 
@@ -71,9 +74,7 @@ class SmallBatchEnforcementCheck(BaseCheck):
             return self.pass_result(f"Small batch guidelines found in {contributing}")
 
         agent_file = context.has_file("claude.md", "agents.md")
-        if agent_file and context.search_file(
-            agent_file, r"small|batch|incremental|focused"
-        ):
+        if agent_file and context.search_file(agent_file, r"small|batch|incremental|focused"):
             return self.partial_result(
                 1.5,
                 f"Small batch hints found in {agent_file}",
@@ -100,8 +101,11 @@ class MultipleApproachCultureCheck(BaseCheck):
             return self.pass_result(f"RFC/design document directory found: {rfc_dir}")
 
         design_docs = context.find_files(
-            "docs/*plan*.md", "docs/*design*.md", "docs/*rfc*.md",
-            "docs/*proposal*.md", "docs/phase-*.md",
+            "docs/*plan*.md",
+            "docs/*design*.md",
+            "docs/*rfc*.md",
+            "docs/*proposal*.md",
+            "docs/phase-*.md",
         )
         if design_docs:
             names = ", ".join(design_docs[:3])
@@ -118,9 +122,7 @@ class MultipleApproachCultureCheck(BaseCheck):
             rule_files = context.find_files(".cursor/rules/*.mdc")
             for rf in rule_files:
                 if context.search_file(rf, r"plan|design|spec"):
-                    return self.pass_result(
-                        f"Plan-driven development rule found in {rf}"
-                    )
+                    return self.pass_result(f"Plan-driven development rule found in {rf}")
 
         return self.fail_result(
             "No design-before-code process found",
@@ -145,7 +147,9 @@ class ErrorHandlingPolicyCheck(BaseCheck):
             return self.pass_result("Panic-prevention clippy lints in CI")
 
         eslintrc = context.has_file(
-            ".eslintrc.json", ".eslintrc.yml", "eslint.config.js",
+            ".eslintrc.json",
+            ".eslintrc.yml",
+            "eslint.config.js",
         )
         if eslintrc and context.search_file(eslintrc, r"no-throw-literal|no-implicit-coercion"):
             return self.pass_result("Error handling ESLint rules configured")

@@ -1,0 +1,5 @@
+# Security-critical paths require maintainer review
+/src/ai_harness_scorecard/repo_context.py @markmishaev76
+/src/ai_harness_scorecard/ci_parser.py @markmishaev76
+/action.yml @markmishaev76
+/.github/workflows/ @markmishaev76

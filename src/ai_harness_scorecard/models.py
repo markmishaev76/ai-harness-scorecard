@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 
@@ -87,7 +87,7 @@ class Assessment:
 
     repo_path: str
     repo_name: str
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     categories: list[CategoryResult] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
 

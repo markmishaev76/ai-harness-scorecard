@@ -23,11 +23,24 @@ LANGUAGE_INDICATORS: dict[str, list[str]] = {
     "kotlin": ["build.gradle.kts"],
 }
 
-IGNORED_DIRS = frozenset({
-    ".git", "node_modules", "target", "__pycache__", ".venv", "venv",
-    "dist", "build", ".tox", ".mypy_cache", ".pytest_cache",
-    "vendor", ".bundle", ".cargo",
-})
+IGNORED_DIRS = frozenset(
+    {
+        ".git",
+        "node_modules",
+        "target",
+        "__pycache__",
+        ".venv",
+        "venv",
+        "dist",
+        "build",
+        ".tox",
+        ".mypy_cache",
+        ".pytest_cache",
+        "vendor",
+        ".bundle",
+        ".cargo",
+    }
+)
 
 
 @dataclass
@@ -94,19 +107,17 @@ class RepoContext:
         """Search multiple files for a text pattern. Return first matching file or None."""
         for file_pat in file_patterns:
             for file_path in self.file_tree:
-                if fnmatch(file_path.lower(), file_pat.lower()):
-                    if self.search_file(file_path, text_pattern):
-                        return file_path
+                if fnmatch(file_path.lower(), file_pat.lower()) and self.search_file(
+                    file_path, text_pattern
+                ):
+                    return file_path
         return None
 
     def ci_has_command(self, pattern: str) -> bool:
         """Return True if any CI job contains a command matching the pattern."""
         regex = re.compile(pattern, re.IGNORECASE)
         return any(
-            regex.search(cmd)
-            for ci in self.ci_configs
-            for job in ci.jobs
-            for cmd in job.commands
+            regex.search(cmd) for ci in self.ci_configs for job in ci.jobs for cmd in job.commands
         )
 
     def ci_has_blocking_command(self, pattern: str) -> bool:

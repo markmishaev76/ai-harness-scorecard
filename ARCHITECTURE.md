@@ -20,9 +20,10 @@ src/ai_harness_scorecard/
 │   ├── testing.py
 │   ├── review.py
 │   └── ai_safeguards.py
-├── reporters/       # Output formatters (Markdown, JSON)
+├── reporters/       # Output formatters (Markdown, JSON, Badge)
 │   ├── markdown.py
-│   └── json_reporter.py
+│   ├── json_reporter.py
+│   └── badge.py
 └── platforms/       # (Future) GitHub/GitLab API adapters for remote checks
 ```
 

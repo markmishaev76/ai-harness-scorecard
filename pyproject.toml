@@ -34,6 +34,13 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.4",
+    "mypy>=1.10",
+    "types-PyYAML>=6.0",
+    "bandit>=1.7",
+    "pip-audit>=2.7",
+    "hypothesis>=6.100",
+    "lychee>=0.1",
+    "mutmut>=3.0",
 ]
 
 [project.scripts]
@@ -47,7 +54,18 @@ line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]

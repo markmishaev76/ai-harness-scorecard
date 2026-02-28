@@ -23,8 +23,11 @@ class CIPipelineExistsCheck(BaseCheck):
             return self.pass_result(f"CI detected: {types}")
 
         ci_files = context.has_file(
-            ".travis.yml", "Jenkinsfile", ".circleci/config.yml",
-            "azure-pipelines.yml", "bitbucket-pipelines.yml",
+            ".travis.yml",
+            "Jenkinsfile",
+            ".circleci/config.yml",
+            "azure-pipelines.yml",
+            "bitbucket-pipelines.yml",
         )
         if ci_files:
             return self.pass_result(f"CI config found: {ci_files}")
@@ -127,8 +130,9 @@ class TypeSafetyCheck(BaseCheck):
             return self.pass_result("TypeScript strict mode enabled")
         if ts_config:
             return self.partial_result(
-                1.5, "TypeScript found but strict mode not confirmed",
-                "Enable \"strict\": true in tsconfig.json.",
+                1.5,
+                "TypeScript found but strict mode not confirmed",
+                'Enable "strict": true in tsconfig.json.',
             )
 
         if context.ci_has_command(r"mypy|pyright|pytype"):
@@ -137,7 +141,8 @@ class TypeSafetyCheck(BaseCheck):
         pyproject = context.has_file("pyproject.toml")
         if pyproject and context.search_file(pyproject, r"\[tool\.mypy\]|\[tool\.pyright\]"):
             return self.partial_result(
-                1.5, "Type checker configured but not confirmed in CI",
+                1.5,
+                "Type checker configured but not confirmed in CI",
                 "Add mypy/pyright to your CI pipeline.",
             )
 
@@ -208,8 +213,12 @@ class ConventionalCommitsCheck(BaseCheck):
             return self.pass_result("Conventional commit enforcement found in CI")
 
         config = context.has_file(
-            ".commitlintrc.yml", ".commitlintrc.json", ".commitlintrc.js",
-            "commitlint.config.js", ".releaserc.json", ".releaserc.yml",
+            ".commitlintrc.yml",
+            ".commitlintrc.json",
+            ".commitlintrc.js",
+            "commitlint.config.js",
+            ".releaserc.json",
+            ".releaserc.yml",
         )
         if config:
             return self.pass_result(f"Commit lint config found: {config}")
@@ -233,7 +242,10 @@ class UnsafeCodePolicyCheck(BaseCheck):
             return self.pass_result("Rust: unsafe_code = forbid")
 
         eslintrc = context.has_file(
-            ".eslintrc.json", ".eslintrc.yml", ".eslintrc.js", "eslint.config.js",
+            ".eslintrc.json",
+            ".eslintrc.yml",
+            ".eslintrc.js",
+            "eslint.config.js",
         )
         if eslintrc and context.search_file(eslintrc, r"no-eval|no-implied-eval"):
             return self.pass_result("ESLint unsafe pattern rules found")

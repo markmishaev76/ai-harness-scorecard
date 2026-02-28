@@ -8,7 +8,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from .models import Grade
+from .models import Assessment, Grade
 from .reporters.badge import render_badge_json
 from .reporters.json_reporter import render_json
 from .reporters.markdown import render_markdown
@@ -28,25 +28,29 @@ GRADE_COLORS = {
 @click.group()
 @click.version_option(package_name="ai-harness-scorecard")
 def main() -> None:
-    """AI Harness Scorecard - Grade repos on engineering practices for safe AI-assisted development."""
+    """Grade repos on engineering practices for safe AI-assisted development."""
 
 
 @main.command()
 @click.argument("path", default=".", type=click.Path(exists=True, file_okay=False))
 @click.option(
-    "--format", "output_format",
+    "--format",
+    "output_format",
     type=click.Choice(["terminal", "markdown", "json"]),
     default="terminal",
     help="Output format.",
 )
 @click.option(
-    "--output", "-o", "output_file",
+    "--output",
+    "-o",
+    "output_file",
     type=click.Path(),
     default=None,
     help="Write report to file instead of stdout.",
 )
 @click.option(
-    "--badge", "badge_file",
+    "--badge",
+    "badge_file",
     type=click.Path(),
     default=None,
     help="Write shields.io endpoint badge JSON to this file.",
@@ -92,7 +96,7 @@ def assess(path: str, output_format: str, output_file: str | None, badge_file: s
         console.print(f"\n[dim]Report written to {output_file}[/dim]")
 
 
-def _render_terminal(assessment) -> None:
+def _render_terminal(assessment: Assessment) -> None:
     grade_color = GRADE_COLORS[assessment.grade]
     console.print(
         f"[bold {grade_color}]Grade: {assessment.grade.value}[/bold {grade_color}]"
@@ -132,8 +136,7 @@ def _render_terminal(assessment) -> None:
         console.print()
 
     console.print(
-        f"[bold]Total:[/bold] "
-        f"{assessment.passed_checks}/{assessment.total_checks} checks passed"
+        f"[bold]Total:[/bold] {assessment.passed_checks}/{assessment.total_checks} checks passed"
     )
     lang_str = ", ".join(assessment.languages) if assessment.languages else "none detected"
     console.print(f"[dim]Languages: {lang_str}[/dim]")

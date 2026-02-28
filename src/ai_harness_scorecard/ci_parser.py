@@ -7,21 +7,23 @@ from pathlib import Path
 
 import yaml
 
-GITLAB_RESERVED_KEYS = frozenset({
-    "stages",
-    "variables",
-    "default",
-    "include",
-    "workflow",
-    "image",
-    "services",
-    "before_script",
-    "after_script",
-    "cache",
-    "artifacts",
-    ".pre",
-    ".post",
-})
+GITLAB_RESERVED_KEYS = frozenset(
+    {
+        "stages",
+        "variables",
+        "default",
+        "include",
+        "workflow",
+        "image",
+        "services",
+        "before_script",
+        "after_script",
+        "cache",
+        "artifacts",
+        ".pre",
+        ".post",
+    }
+)
 
 
 @dataclass
@@ -79,12 +81,14 @@ def _parse_gitlab_ci(path: Path) -> CIConfig | None:
         if not isinstance(value, dict):
             continue
 
-        config.jobs.append(CIJob(
-            name=key,
-            commands=_extract_gitlab_commands(value),
-            allow_failure=bool(value.get("allow_failure", False)),
-            stage=value.get("stage"),
-        ))
+        config.jobs.append(
+            CIJob(
+                name=key,
+                commands=_extract_gitlab_commands(value),
+                allow_failure=bool(value.get("allow_failure", False)),
+                stage=value.get("stage"),
+            )
+        )
 
     return config
 
@@ -139,11 +143,13 @@ def _parse_github_actions(path: Path) -> CIConfig | None:
             if isinstance(step, dict) and "run" in step:
                 commands.append(str(step["run"]))
 
-        config.jobs.append(CIJob(
-            name=job_name,
-            commands=commands,
-            allow_failure=bool(job_data.get("continue-on-error", False)),
-        ))
+        config.jobs.append(
+            CIJob(
+                name=job_name,
+                commands=commands,
+                allow_failure=bool(job_data.get("continue-on-error", False)),
+            )
+        )
 
     return config
 

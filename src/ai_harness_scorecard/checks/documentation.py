@@ -71,7 +71,12 @@ class ADRPresenceCheck(BaseCheck):
 
     def run(self, context: RepoContext) -> CheckResult:
         adr_dir = context.has_dir(
-            "docs/adr", "docs/decisions", "docs/ADR", "adr", "doc/adr", "doc/decisions",
+            "docs/adr",
+            "docs/decisions",
+            "docs/ADR",
+            "adr",
+            "doc/adr",
+            "doc/decisions",
         )
         if adr_dir:
             return self.pass_result(f"Found ADR directory: {adr_dir}")
@@ -134,21 +139,25 @@ class APIContractsCheck(BaseCheck):
     source = "DORA 2025 - AI-accessible documentation"
 
     def run(self, context: RepoContext) -> CheckResult:
-        doc_gen_pattern = (
-            r"cargo\s+doc|rustdoc|typedoc|jsdoc|sphinx|mkdocs|pdoc|javadoc|godoc|swag"
-        )
+        doc_gen_pattern = r"cargo\s+doc|rustdoc|typedoc|jsdoc|sphinx|mkdocs|pdoc|javadoc|godoc|swag"
         if context.ci_has_command(doc_gen_pattern):
             return self.pass_result("Doc generation found in CI")
 
         spec_file = context.has_file(
-            "openapi.yaml", "openapi.json", "openapi.yml",
-            "swagger.yaml", "swagger.json",
+            "openapi.yaml",
+            "openapi.json",
+            "openapi.yml",
+            "swagger.yaml",
+            "swagger.json",
         )
         if spec_file:
             return self.pass_result(f"API spec found: {spec_file}")
 
         doc_config = context.has_file(
-            "mkdocs.yml", "docs/conf.py", "typedoc.json", "jsdoc.json",
+            "mkdocs.yml",
+            "docs/conf.py",
+            "typedoc.json",
+            "jsdoc.json",
         )
         if doc_config:
             return self.pass_result(f"Doc generation config found: {doc_config}")

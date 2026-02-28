@@ -35,14 +35,24 @@ def render_badge_json(assessment: Assessment) -> str:
     )
 
 
-def badge_url(owner: str, repo: str, branch: str = "main", file: str = "scorecard-badge.json") -> str:
+def badge_url(
+    owner: str,
+    repo: str,
+    branch: str = "main",
+    file: str = "scorecard-badge.json",
+) -> str:
     """Return the shields.io badge URL for a repo that has the badge JSON committed."""
     raw = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file}"
     encoded = raw.replace(":", "%3A").replace("/", "%2F")
     return f"https://img.shields.io/endpoint?url={encoded}"
 
 
-def badge_markdown(owner: str, repo: str, branch: str = "main", file: str = "scorecard-badge.json") -> str:
+def badge_markdown(
+    owner: str,
+    repo: str,
+    branch: str = "main",
+    file: str = "scorecard-badge.json",
+) -> str:
     """Return full Markdown badge snippet ready to paste into a README."""
     url = badge_url(owner, repo, branch, file)
     link = f"https://github.com/{owner}/{repo}"

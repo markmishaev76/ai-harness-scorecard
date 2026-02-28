@@ -19,12 +19,24 @@ class TestSuiteExistsCheck(BaseCheck):
 
     def run(self, context: RepoContext) -> CheckResult:
         has_test_dir = context.has_dir(
-            "tests", "test", "spec", "src/test", "__tests__",
+            "tests",
+            "test",
+            "spec",
+            "src/test",
+            "__tests__",
         )
         has_test_files = context.has_file(
-            "tests/*.rs", "tests/*.py", "tests/*.ts", "tests/*.js",
-            "test_*.py", "*_test.go", "*_test.rs", "*.test.ts", "*.test.js",
-            "*.spec.ts", "*.spec.js",
+            "tests/*.rs",
+            "tests/*.py",
+            "tests/*.ts",
+            "tests/*.js",
+            "test_*.py",
+            "*_test.go",
+            "*_test.rs",
+            "*.test.ts",
+            "*.test.js",
+            "*.spec.ts",
+            "*.spec.js",
         )
 
         has_tests = has_test_dir or has_test_files
@@ -38,7 +50,8 @@ class TestSuiteExistsCheck(BaseCheck):
             return self.pass_result("Tests present and executed in CI")
         if has_tests:
             return self.partial_result(
-                1.5, "Tests found but not confirmed in CI",
+                1.5,
+                "Tests found but not confirmed in CI",
                 "Add test execution to your CI pipeline.",
             )
         return self.fail_result(
@@ -80,17 +93,14 @@ class FeatureMatrixTestingCheck(BaseCheck):
             r"--features\s",
             r"NODE_ENV=",
         ]
-        found_combos = sum(
-            1 for pattern in feature_patterns if context.ci_has_command(pattern)
-        )
+        found_combos = sum(1 for pattern in feature_patterns if context.ci_has_command(pattern))
         if found_combos >= 2:
-            return self.pass_result(
-                f"Feature combination testing found ({found_combos} variants)"
-            )
+            return self.pass_result(f"Feature combination testing found ({found_combos} variants)")
 
         if len(test_jobs) == 2:
             return self.partial_result(
-                1.5, "Two test jobs found, consider adding more configurations",
+                1.5,
+                "Two test jobs found, consider adding more configurations",
                 "Test with different feature flags, environments, or dependency versions.",
             )
 
@@ -124,12 +134,16 @@ class CoverageMeasurementCheck(BaseCheck):
                 return self.pass_result(f"Coverage measurement in CI: {pattern}")
 
         coverage_config = context.has_file(
-            ".codecov.yml", "codecov.yml", ".coveragerc", "coverage.config.js",
+            ".codecov.yml",
+            "codecov.yml",
+            ".coveragerc",
+            "coverage.config.js",
             "jest.config.*",
         )
         if coverage_config:
             return self.partial_result(
-                2.0, f"Coverage config found ({coverage_config}) but not confirmed in CI",
+                2.0,
+                f"Coverage config found ({coverage_config}) but not confirmed in CI",
                 "Add coverage reporting to your CI pipeline.",
             )
 
@@ -152,12 +166,16 @@ class MutationTestingCheck(BaseCheck):
             return self.pass_result("Mutation testing found in CI")
 
         mutation_config = context.has_file(
-            "stryker.conf.js", "stryker.conf.json", ".stryker-tmp",
-            "mutmut_config.py", ".mutmut",
+            "stryker.conf.js",
+            "stryker.conf.json",
+            ".stryker-tmp",
+            "mutmut_config.py",
+            ".mutmut",
         )
         if mutation_config:
             return self.partial_result(
-                2.0, f"Mutation testing config found ({mutation_config})",
+                2.0,
+                f"Mutation testing config found ({mutation_config})",
                 "Add mutation testing to CI, even on a scheduled basis.",
             )
 
@@ -186,9 +204,7 @@ class PropertyBasedTestingCheck(BaseCheck):
         for dep_file in dep_files:
             for pattern in patterns:
                 if context.search_any_file([dep_file, f"*/{dep_file}"], pattern):
-                    return self.pass_result(
-                        f"Property-based testing library found in {dep_file}"
-                    )
+                    return self.pass_result(f"Property-based testing library found in {dep_file}")
 
         test_files = context.find_files("tests/*.rs", "tests/*.py", "test_*.py", "*.test.ts")
         prop_test_patterns = [r"proptest!", r"@given", r"fc\.(assert|property)", r"rapid\.Check"]
@@ -217,8 +233,10 @@ class FuzzTestingCheck(BaseCheck):
             return self.pass_result(f"Fuzz testing directory found: {fuzz_dir}")
 
         fuzz_file = context.has_file(
-            "fuzz/fuzz_targets/*.rs", "fuzz/*.py",
-            "fuzz_test.go", "*_fuzz_test.go",
+            "fuzz/fuzz_targets/*.rs",
+            "fuzz/*.py",
+            "fuzz_test.go",
+            "*_fuzz_test.go",
         )
         if fuzz_file:
             return self.pass_result(f"Fuzz target found: {fuzz_file}")
@@ -241,10 +259,15 @@ class ContractTestsCheck(BaseCheck):
 
     def run(self, context: RepoContext) -> CheckResult:
         contract_files = context.find_files(
-            "*contract*", "*golden*", "*compat*", "*snapshot*", "*fixture*",
+            "*contract*",
+            "*golden*",
+            "*compat*",
+            "*snapshot*",
+            "*fixture*",
         )
         test_contract_files = [
-            f for f in contract_files
+            f
+            for f in contract_files
             if any(ext in f for ext in (".rs", ".py", ".ts", ".js", ".go", ".json"))
         ]
         if test_contract_files:

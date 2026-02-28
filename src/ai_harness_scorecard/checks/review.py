@@ -81,8 +81,7 @@ class StaleDocDetectionCheck(BaseCheck):
 
         return self.fail_result(
             "No stale documentation detection found",
-            "Add TODO/FIXME scanning, link checking (lychee), "
-            "or prose linting (vale) to CI.",
+            "Add TODO/FIXME scanning, link checking (lychee), or prose linting (vale) to CI.",
         )
 
 

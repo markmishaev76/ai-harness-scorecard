@@ -1,0 +1,33 @@
+{
+  "repo_path": "/tmp/test-repo",
+  "repo_name": "test-repo",
+  "timestamp": "2026-01-01T00:00:00+00:00",
+  "languages": ["python"],
+  "overall_score": 100.0,
+  "grade": "A",
+  "grade_description": "Strong harness. AI-generated code has robust mechanical safeguards.",
+  "total_checks": 1,
+  "passed_checks": 1,
+  "categories": [
+    {
+      "category_id": "test_cat",
+      "name": "Test Category",
+      "weight": 1.0,
+      "score": 10.0,
+      "max_score": 10.0,
+      "percentage": 100.0,
+      "checks": [
+        {
+          "check_id": "test.check",
+          "name": "Test Check",
+          "passed": true,
+          "score": 10.0,
+          "max_points": 10.0,
+          "evidence": "test evidence",
+          "remediation": "test fix",
+          "source": "test source"
+        }
+      ]
+    }
+  ]
+}

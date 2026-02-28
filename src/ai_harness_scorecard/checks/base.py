@@ -18,8 +18,7 @@ class BaseCheck(ABC):
     source: str
 
     @abstractmethod
-    def run(self, context: RepoContext) -> CheckResult:
-        ...
+    def run(self, context: RepoContext) -> CheckResult: ...
 
     def pass_result(self, evidence: str) -> CheckResult:
         return CheckResult(
