@@ -47,12 +47,13 @@ runs:
       id: assess
       shell: bash
       run: |
+        mkdir -p "$(dirname "${{ inputs.output-file }}")"
+
         ai-harness-scorecard assess "${{ inputs.path }}" \
           --format "${{ inputs.format }}" \
-          -o "${{ inputs.output-file }}" 2>/dev/null
+          -o "${{ inputs.output-file }}"
 
-        # Extract grade and score from JSON for outputs
-        JSON=$(ai-harness-scorecard assess "${{ inputs.path }}" --format json 2>/dev/null)
+        JSON=$(ai-harness-scorecard assess "${{ inputs.path }}" --format json)
         GRADE=$(echo "$JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['grade'])")
         SCORE=$(echo "$JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['overall_score'])")
 
