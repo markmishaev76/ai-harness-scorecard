@@ -1,6 +1,6 @@
 # AI Harness Scorecard
 
-[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2Fai-harness-scorecard%2Fmain%2Fscorecard-badge.json)](https://github.com/markmishaev76/ai-harness-scorecard)
+[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2Fai-harness-scorecard%2Fmain%2Fscorecard-badge.json)](scorecard-report.md)
 
 Grade any Git repository on its engineering safeguards for safe AI-assisted development.
 
@@ -87,10 +87,10 @@ Display your score as a badge in your README, powered by [shields.io](https://sh
 3. Add the badge to your README:
 
 ```markdown
-[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FOWNER%2FREPO%2Fmain%2Fscorecard-badge.json)](https://github.com/markmishaev76/ai-harness-scorecard)
+[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FOWNER%2FREPO%2Fmain%2Fscorecard-badge.json)](scorecard-report.md)
 ```
 
-Replace `OWNER` and `REPO` with your GitHub username and repository name.
+Replace `OWNER` and `REPO` with your GitHub username and repository name. The badge links to `scorecard-report.md` in the same repo, which contains the full score breakdown and recommendations.
 
 **CLI:**
 
@@ -119,12 +119,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: markmishaev76/ai-harness-scorecard@v1
         id: scorecard
-      - name: Commit badge
+      - name: Commit badge and report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scorecard-badge.json
-          git diff --cached --quiet || git commit -m "chore: update scorecard badge"
+          git add scorecard-badge.json scorecard-report.md
+          git diff --cached --quiet || git commit -m "chore: update scorecard badge and report"
           git push
 ```
 
