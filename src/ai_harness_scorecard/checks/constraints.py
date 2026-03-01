@@ -197,6 +197,9 @@ class DependencyAuditingCheck(BaseCheck):
         r"gemnasium",
         r"dependabot",
         r"renovate",
+        r"snyk/actions",
+        r"dependency-check-maven",
+        r"ossindex-maven-plugin",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:

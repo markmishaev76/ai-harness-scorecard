@@ -125,33 +125,39 @@ def _parse_github_actions(path: Path) -> CIConfig | None:
         return None
 
     config = CIConfig(ci_type="github", raw_content=raw)
+    config.has_schedule = _is_github_scheduled(data)
 
-    on_triggers = data.get("on") or data.get(True, {})
-    if isinstance(on_triggers, dict) and "schedule" in on_triggers:
-        config.has_schedule = True
-
-    jobs = data.get("jobs", {})
-    if not isinstance(jobs, dict):
+    jobs_data = data.get("jobs", {})
+    if not isinstance(jobs_data, dict):
         return config
 
-    for job_name, job_data in jobs.items():
-        if not isinstance(job_data, dict):
-            continue
-
-        commands: list[str] = []
-        for step in job_data.get("steps", []):
-            if isinstance(step, dict) and "run" in step:
-                commands.append(str(step["run"]))
-
-        config.jobs.append(
-            CIJob(
-                name=job_name,
-                commands=commands,
-                allow_failure=bool(job_data.get("continue-on-error", False)),
-            )
-        )
+    for job_name, job_data in jobs_data.items():
+        if isinstance(job_data, dict):
+            config.jobs.append(_create_github_job(job_name, job_data))
 
     return config
+
+
+def _is_github_scheduled(data: dict) -> bool:
+    on_triggers = data.get("on") or data.get(True, {})
+    return isinstance(on_triggers, dict) and "schedule" in on_triggers
+
+
+def _create_github_job(name: str, data: dict) -> CIJob:
+    commands: list[str] = []
+    for step in data.get("steps", []):
+        if not isinstance(step, dict):
+            continue
+        if "run" in step:
+            commands.append(str(step["run"]))
+        if "uses" in step:
+            commands.append(f"uses: {step['uses']}")
+
+    return CIJob(
+        name=name,
+        commands=commands,
+        allow_failure=bool(data.get("continue-on-error", False)),
+    )
 
 
 def _load_yaml(path: Path) -> tuple[str, dict | None]:
