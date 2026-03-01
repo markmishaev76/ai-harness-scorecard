@@ -103,12 +103,29 @@ class FormatterEnforcementCheck(BaseCheck):
         r"goimports",
         r"rustfmt.*--check",
         r"scalafmt\s+--check",
+        r"spotless:check",
+        r"spotlessCheck",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
         for pattern in self.FORMATTER_PATTERNS:
             if context.ci_has_command(pattern):
                 return self.pass_result(f"Formatter check found in CI: {pattern}")
+
+        if "java" in context.languages:
+            pom_xml = context.has_file("pom.xml")
+            if pom_xml and context.search_file(pom_xml, r"spotless-maven-plugin"):
+                return self.partial_result(
+                    2.0,
+                    "Spotless plugin found but not confirmed in CI",
+                    "Add spotless:check to your CI pipeline.",
+                )
+            if context.has_file("checkstyle.xml"):
+                return self.partial_result(
+                    2.0,
+                    "Checkstyle config found but not confirmed in CI",
+                    "Add checkstyle to your CI pipeline.",
+                )
 
         return self.fail_result(
             "No formatter check found in CI",
