@@ -86,7 +86,7 @@ To add a new check, you'll need to write a class that inherits from `BaseCheck`,
 
 All checks must subclass `ai_harness_scorecard.checks.base.BaseCheck`. When writing a check, you need to define several class-level attributes:
 
-- `check_id`: A unique string identifier following the `category.snake_case` convention (e.g., `"documentation.readme_presence"`).
+- `check_id`: A unique string identifier using `category.snake_case` (e.g., `"documentation.readme_presence"`).
 - `name`: A short, descriptive name (e.g., `"Required Documentation"`).
 - `description`: A detailed explanation of what the check verifies.
 - `max_points`: The maximum score a repository can earn for this check (usually `10.0`).
