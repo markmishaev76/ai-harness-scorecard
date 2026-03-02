@@ -57,6 +57,7 @@ class LinterEnforcementCheck(BaseCheck):
         r"pyright",
         r"ktlint",
         r"swiftlint",
+        r"checkstyle",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
@@ -71,6 +72,13 @@ class LinterEnforcementCheck(BaseCheck):
                     f"Linter found in CI ({pattern}) but may not be blocking",
                     "Ensure linter job is not set to allow_failure / continue-on-error.",
                 )
+
+        if "java" in context.languages and context.has_file("checkstyle.xml"):
+            return self.partial_result(
+                2.0,
+                "Checkstyle config found but not confirmed in CI",
+                "Add checkstyle to your CI pipeline as a blocking job.",
+            )
 
         return self.fail_result(
             "No linter found in CI",
@@ -95,12 +103,23 @@ class FormatterEnforcementCheck(BaseCheck):
         r"goimports",
         r"rustfmt.*--check",
         r"scalafmt\s+--check",
+        r"spotless:check",
+        r"spotlessCheck",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
         for pattern in self.FORMATTER_PATTERNS:
             if context.ci_has_command(pattern):
                 return self.pass_result(f"Formatter check found in CI: {pattern}")
+
+        if "java" in context.languages:
+            pom_xml = context.has_file("pom.xml")
+            if pom_xml and context.search_file(pom_xml, r"spotless-maven-plugin"):
+                return self.partial_result(
+                    2.0,
+                    "Spotless plugin found but not confirmed in CI",
+                    "Add spotless:check to your CI pipeline.",
+                )
 
         return self.fail_result(
             "No formatter check found in CI",
@@ -172,6 +191,9 @@ class DependencyAuditingCheck(BaseCheck):
         r"gemnasium",
         r"dependabot",
         r"renovate",
+        r"snyk/actions",
+        r"dependency-check-maven",
+        r"ossindex-maven-plugin",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:

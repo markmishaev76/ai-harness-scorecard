@@ -194,20 +194,42 @@ class PropertyBasedTestingCheck(BaseCheck):
     source = "Blog: catching edge cases in AI-generated code"
 
     def run(self, context: RepoContext) -> CheckResult:
-        dep_files = ["cargo.toml", "pyproject.toml", "package.json", "go.mod"]
+        dep_files = [
+            "cargo.toml",
+            "pyproject.toml",
+            "package.json",
+            "go.mod",
+            "pom.xml",
+            "build.gradle",
+            "build.gradle.kts",
+        ]
         patterns = [
             r"proptest|quickcheck|arbtest",
             r"hypothesis",
             r"fast-check|jsverify",
             r"rapid",
+            r"jqwik",
         ]
         for dep_file in dep_files:
             for pattern in patterns:
                 if context.search_any_file([dep_file, f"*/{dep_file}"], pattern):
                     return self.pass_result(f"Property-based testing library found in {dep_file}")
 
-        test_files = context.find_files("tests/*.rs", "tests/*.py", "test_*.py", "*.test.ts")
-        prop_test_patterns = [r"proptest!", r"@given", r"fc\.(assert|property)", r"rapid\.Check"]
+        test_files = context.find_files(
+            "tests/*.rs",
+            "tests/*.py",
+            "test_*.py",
+            "*.test.ts",
+            "*PropertyTest.java",
+            "*PropertyTest.kt",
+        )
+        prop_test_patterns = [
+            r"proptest!",
+            r"@given",
+            r"fc\.(assert|property)",
+            r"rapid\.Check",
+            r"@Property",
+        ]
         for tf in test_files:
             for pattern in prop_test_patterns:
                 if context.search_file(tf, pattern):
@@ -215,7 +237,7 @@ class PropertyBasedTestingCheck(BaseCheck):
 
         return self.fail_result(
             "No property-based testing found",
-            "Add proptest (Rust), hypothesis (Python), or fast-check (JS/TS) "
+            "Add proptest (Rust), hypothesis (Python), fast-check (JS/TS), or jqwik (Java) "
             "for testing invariants with random structured inputs.",
         )
 

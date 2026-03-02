@@ -18,3 +18,5 @@ htmlcov/
 .DS_Store
 labkit-rs-report.md
 .hypothesis/
+node_modules/
+uv.lock
