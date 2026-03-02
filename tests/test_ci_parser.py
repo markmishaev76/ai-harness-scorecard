@@ -1,5 +1,7 @@
 """Tests for CI configuration parsing."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from ai_harness_scorecard.ci_parser import parse_ci_configs
