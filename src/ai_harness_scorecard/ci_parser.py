@@ -146,7 +146,6 @@ def _is_github_scheduled(data: dict) -> bool:
 def _create_github_job(name: str, data: dict) -> CIJob:
     commands: list[str] = []
 
-    # Reusable workflow calls (jobs.<id>.uses:) have no steps key.
     job_uses = data.get("uses")
     if isinstance(job_uses, str):
         commands.append(f"uses: {job_uses}")
