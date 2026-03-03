@@ -112,7 +112,7 @@ class FormatterEnforcementCheck(BaseCheck):
             if context.ci_has_command(pattern):
                 return self.pass_result(f"Formatter check found in CI: {pattern}")
 
-        if "java" in context.languages:
+        if "java" in context.languages or "kotlin" in context.languages:
             pom_xml = context.has_file("pom.xml")
             if pom_xml and context.search_file(pom_xml, r"spotless-maven-plugin"):
                 return self.partial_result(
