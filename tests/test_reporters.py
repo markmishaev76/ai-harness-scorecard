@@ -106,7 +106,7 @@ class TestJsonReporterContract:
     def test_json_score_is_numeric(self) -> None:
         assessment = _make_assessment()
         data = json.loads(render_json(assessment))
-        assert isinstance(data["overall_score"], (int, float))
+        assert isinstance(data["overall_score"], int | float)
 
     def test_json_is_valid_json(self) -> None:
         assessment = _make_assessment()

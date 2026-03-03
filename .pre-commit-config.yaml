@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.0
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-PyYAML, rich, click, jinja2]
+        files: ^src/
+
+  - repo: local
+    hooks:
+      - id: tests
+        name: run tests
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: assessment
+        name: check scorecard
+        entry: uv run ai-harness-scorecard assess .
+        language: system
+        pass_filenames: false
+        always_run: true

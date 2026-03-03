@@ -19,12 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Quality Assurance",
 ]
-dependencies = [
-    "click>=8.1",
-    "pyyaml>=6.0",
-    "rich>=13.0",
-    "jinja2>=3.1",
-]
+dependencies = ["click>=8.1", "pyyaml>=6.0", "rich>=13.0", "jinja2>=3.1"]
 
 [project.optional-dependencies]
 github = ["PyGithub>=2.0"]
@@ -41,6 +36,7 @@ dev = [
     "hypothesis>=6.100",
     "lychee>=0.1",
     "mutmut>=3.0",
+    "pre-commit>=3.7",
 ]
 
 [project.scripts]
