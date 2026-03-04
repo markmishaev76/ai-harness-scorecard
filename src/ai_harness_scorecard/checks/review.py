@@ -5,9 +5,13 @@ Blog principle: 'Separate author from reviewer' + 'garbage collection agents.'
 
 from __future__ import annotations
 
-from ..models import CheckResult
-from ..repo_context import RepoContext
+from typing import TYPE_CHECKING
+
 from .base import BaseCheck
+
+if TYPE_CHECKING:
+    from ..models import CheckResult
+    from ..repo_context import RepoContext
 
 
 class CodeReviewRequiredCheck(BaseCheck):

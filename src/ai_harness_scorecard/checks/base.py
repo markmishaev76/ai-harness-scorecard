@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from ..models import CheckResult
-from ..repo_context import RepoContext
+
+if TYPE_CHECKING:
+    from ..repo_context import RepoContext
 
 
 class BaseCheck(ABC):

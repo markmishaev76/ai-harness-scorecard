@@ -5,9 +5,13 @@ Blog principle: 'Document architecture in the repo, not in people's heads.'
 
 from __future__ import annotations
 
-from ..models import CheckResult
-from ..repo_context import RepoContext
+from typing import TYPE_CHECKING
+
 from .base import BaseCheck
+
+if TYPE_CHECKING:
+    from ..models import CheckResult
+    from ..repo_context import RepoContext
 
 
 class ArchitectureDocCheck(BaseCheck):

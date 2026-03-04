@@ -5,9 +5,13 @@ Blog principle: 'Measure stability alongside throughput' + 'tests define what co
 
 from __future__ import annotations
 
-from ..models import CheckResult
-from ..repo_context import RepoContext
+from typing import TYPE_CHECKING
+
 from .base import BaseCheck
+
+if TYPE_CHECKING:
+    from ..models import CheckResult
+    from ..repo_context import RepoContext
 
 
 class TestSuiteExistsCheck(BaseCheck):

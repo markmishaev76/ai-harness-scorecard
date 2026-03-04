@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from typing import TYPE_CHECKING
 
-from ..models import Assessment, CategoryResult, CheckResult
+if TYPE_CHECKING:
+    from ..models import Assessment, CategoryResult, CheckResult
 
 
 def render_json(assessment: Assessment) -> str:

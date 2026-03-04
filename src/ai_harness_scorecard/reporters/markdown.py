@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from ..models import Assessment, CategoryResult, CheckResult
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..models import Assessment, CategoryResult, CheckResult
 
 
 def render_markdown(assessment: Assessment) -> str:
