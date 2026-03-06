@@ -243,6 +243,19 @@ Each check in the scorecard cites a `source` field linking back to one of these 
   - **Greenfield-only caveat**: "There's no way in heck would I use Ralph in an existing code base." This validates that existing repos need stronger safeguards (what we measure) for AI to work safely.
   - Real-world outcome: a $50K USD contract delivered for $297 in AI compute costs.
 
+### Kief Morris — "Humans and Agents in Software Engineering Loops" (Mar 2026)
+
+- **Type**: Blog post (Martin Fowler / Thoughtworks)
+- **URL**: https://martinfowler.com/articles/exploring-gen-ai/humans-and-agents.html
+- **Relevance**: Defines three positions for humans in AI-assisted development and introduces the "agentic flywheel" concept. Directly validates the scorecard's design philosophy and suggests new check directions.
+- **Key concepts**:
+  - **On the loop > in the loop**: Instead of reviewing every line agents produce, build and maintain the harness that controls them. When output is bad, fix the system, not the artifact.
+  - **Internal quality still matters**: LLMs work faster and spiral less in clean codebases. Mechanical constraints (what we measure) reduce cost and time even when agents write all the code.
+  - **Harness = specs + quality checks + workflow guidance**: The exact combination our 5 categories measure. The article gives this collection a name and a framework.
+  - **Agentic flywheel**: Agents evaluating loop performance and recommending harness improvements. The harness becomes self-improving when fed test results, pipeline metrics, and production data.
+  - **Shift left for agents**: Agents produce better code when they can gauge quality themselves (tests, lints, type checks) rather than relying on humans to check after.
+  - **Multiple how-loop levels**: Outer loops (feature), middle loops (stories), inner loops (code). Each needs its own validation. Richer feedback loops produce better outcomes.
+
 ### Ars Contexta — Memory Infrastructure for Claude Code
 
 - **Type**: Tool / Claude Code plugin
@@ -354,6 +367,7 @@ Each check in the scorecard cites a `source` field linking back to one of these 
 | Dave Farley (Modern SE) | `ci_pipeline_exists`, `coverage_measurement` |
 | Huntley: Ralph Wiggum technique | `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `test_suite_exists`, `tests_blocking_ci` |
 | Ars Contexta (memory plugin) | `agent_instructions`, `architecture_doc` |
+| Morris: Humans & Agents (Fowler) | `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `test_suite_exists`, `tests_blocking_ci`, `coverage_measurement`, `automated_review` |
 
 ## Contributing
 
