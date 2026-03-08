@@ -277,3 +277,32 @@ class TestSecurityCriticalMarkingCheck:
         context = _build_context(tmp_path)
         result = SecurityCriticalMarkingCheck().run(context)
         assert not result.passed
+
+
+class TestFuzzTestingCheck:
+    def test_pass_with_jazzer_in_pom(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.testing import FuzzTestingCheck
+
+        pom_content = "<project><dependency>jazzer-junit</dependency></project>"
+        context = _build_context(tmp_path, {"pom.xml": pom_content})
+        result = FuzzTestingCheck().run(context)
+        assert result.passed
+        assert "pom.xml" in result.evidence
+
+    def test_pass_with_java_fuzz_test_file(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.testing import FuzzTestingCheck
+
+        context = _build_context(
+            tmp_path, {"src/test/java/MyFuzzTest.java": "@FuzzTest void test() {}"}
+        )
+        result = FuzzTestingCheck().run(context)
+        assert result.passed
+        assert "MyFuzzTest.java" in result.evidence
+
+    def test_fuzz_testing_fail(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.testing import FuzzTestingCheck
+
+        context = _build_context(tmp_path)
+        result = FuzzTestingCheck().run(context)
+        assert not result.passed
+        assert result.score == pytest.approx(0.0)
