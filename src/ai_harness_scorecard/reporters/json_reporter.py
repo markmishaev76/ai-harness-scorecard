@@ -29,7 +29,7 @@ def _serialize(assessment: Assessment) -> dict[str, Any]:
     }
 
 
-def _serialize_category(category: CategoryResult) -> dict[str, object]:
+def _serialize_category(category: CategoryResult) -> dict[str, Any]:
     return {
         "category_id": category.category_id,
         "name": category.name,
@@ -41,7 +41,7 @@ def _serialize_category(category: CategoryResult) -> dict[str, object]:
     }
 
 
-def _serialize_check(check: CheckResult) -> dict[str, object]:
+def _serialize_check(check: CheckResult) -> dict[str, Any]:
     return {
         "check_id": check.check_id,
         "name": check.name,

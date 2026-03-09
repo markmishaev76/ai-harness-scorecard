@@ -158,9 +158,10 @@ class RepoContext:
             return {}
         try:
             data = json.loads(content)
-            scripts = data.get("scripts", {})
-            if isinstance(scripts, dict):
-                return {k: str(v) for k, v in scripts.items()}
+            if isinstance(data, dict):
+                scripts = data.get("scripts", {})
+                if isinstance(scripts, dict):
+                    return {k: str(v) for k, v in scripts.items()}
         except (json.JSONDecodeError, TypeError):
             pass
         return {}
