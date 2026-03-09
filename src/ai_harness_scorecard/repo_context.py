@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass, field
@@ -51,6 +52,7 @@ class RepoContext:
     file_tree: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
     ci_configs: list[CIConfig] = field(default_factory=list)
+    scripts: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def build(cls, repo_path: str | Path) -> RepoContext:
@@ -59,6 +61,7 @@ class RepoContext:
         ctx.file_tree = ctx._scan_file_tree()
         ctx.languages = ctx._detect_languages()
         ctx.ci_configs = parse_ci_configs(path)
+        ctx.scripts = ctx._load_scripts()
         return ctx
 
     def has_file(self, *patterns: str) -> str | None:
@@ -116,20 +119,30 @@ class RepoContext:
     def ci_has_command(self, pattern: str) -> bool:
         """Return True if any CI job contains a command matching the pattern."""
         regex = re.compile(pattern, re.IGNORECASE)
-        return any(
-            regex.search(cmd) for ci in self.ci_configs for job in ci.jobs for cmd in job.commands
-        )
+        for ci in self.ci_configs:
+            for job in ci.jobs:
+                if self._matches_command(job.commands, regex):
+                    return True
+        return False
 
     def ci_has_blocking_command(self, pattern: str) -> bool:
         """Return True if a non-allow_failure CI job contains a matching command."""
         regex = re.compile(pattern, re.IGNORECASE)
-        return any(
-            regex.search(cmd)
-            for ci in self.ci_configs
-            for job in ci.jobs
-            if not job.allow_failure
-            for cmd in job.commands
-        )
+        for ci in self.ci_configs:
+            for job in ci.jobs:
+                if not job.allow_failure and self._matches_command(job.commands, regex):
+                    return True
+        return False
+
+    def _matches_command(self, commands: list[str], regex: re.Pattern[str]) -> bool:
+        """Helper to match a regex against a list of commands, including script resolution."""
+        for cmd in commands:
+            if regex.search(cmd):
+                return True
+            resolved = self._resolve_script(cmd)
+            if resolved and regex.search(resolved):
+                return True
+        return False
 
     def ci_has_scheduled_job(self) -> bool:
         return any(ci.has_schedule for ci in self.ci_configs)
@@ -137,6 +150,46 @@ class RepoContext:
     def ci_raw_content(self) -> str:
         """Concatenated raw CI config content for text-level searches."""
         return "\n".join(ci.raw_content for ci in self.ci_configs)
+
+    def _load_scripts(self) -> dict[str, str]:
+        """Load scripts from package.json if it exists."""
+        content = self.read_file("package.json")
+        if not content:
+            return {}
+        try:
+            data = json.loads(content)
+            scripts = data.get("scripts", {})
+            if isinstance(scripts, dict):
+                return {k: str(v) for k, v in scripts.items()}
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return {}
+
+    def _resolve_script(self, command: str) -> str | None:
+        """
+        Attempt to resolve a script name from an npm/yarn/pnpm/bun invocation.
+        Example: 'npm run lint' -> returns the content of 'lint' script.
+        """
+        parts = command.split()
+        if len(parts) < 2:
+            return None
+
+        pkg_manager = parts[0].lower()
+        if pkg_manager not in ("npm", "yarn", "pnpm", "bun"):
+            return None
+
+        script_name = None
+        if parts[1].lower() == "run":
+            if len(parts) >= 3:
+                script_name = parts[2]
+        elif pkg_manager in ("yarn", "pnpm", "bun"):
+            # yarn, pnpm, and bun allow omitting 'run' for custom scripts
+            script_name = parts[1]
+
+        if script_name and script_name in self.scripts:
+            return self.scripts[script_name]
+
+        return None
 
     def _scan_file_tree(self) -> list[str]:
         files: list[str] = []

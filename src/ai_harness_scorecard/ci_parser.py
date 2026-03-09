@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -96,7 +96,7 @@ def _parse_gitlab_ci(path: Path) -> CIConfig | None:
     return config
 
 
-def _detect_gitlab_schedule(data: dict, config: CIConfig) -> None:
+def _detect_gitlab_schedule(data: dict[str, Any], config: CIConfig) -> None:
     for value in data.values():
         if not isinstance(value, dict):
             continue
@@ -111,7 +111,7 @@ def _detect_gitlab_schedule(data: dict, config: CIConfig) -> None:
                     return
 
 
-def _extract_gitlab_commands(job_data: dict) -> list[str]:
+def _extract_gitlab_commands(job_data: dict[str, Any]) -> list[str]:
     commands: list[str] = []
     for key in ("before_script", "script", "after_script"):
         scripts = job_data.get(key, [])
@@ -141,12 +141,16 @@ def _parse_github_actions(path: Path) -> CIConfig | None:
     return config
 
 
-def _is_github_scheduled(data: dict) -> bool:
-    on_triggers = data.get("on") or data.get(True, {})
+def _is_github_scheduled(data: dict[str, Any]) -> bool:
+    # In some YAML parsers, 'on' is interpreted as True (boolean)
+    on_triggers = data.get("on")
+    if on_triggers is None:
+        on_triggers = data.get(cast("str", True))
+
     return isinstance(on_triggers, dict) and "schedule" in on_triggers
 
 
-def _create_github_job(name: str, data: dict) -> CIJob:
+def _create_github_job(name: str, data: dict[str, Any]) -> CIJob:
     commands: list[str] = []
 
     job_uses = data.get("uses")
@@ -168,7 +172,7 @@ def _create_github_job(name: str, data: dict) -> CIJob:
     )
 
 
-def _load_yaml(path: Path) -> tuple[str, dict | None]:
+def _load_yaml(path: Path) -> tuple[str, dict[str, Any] | None]:
     try:
         raw = path.read_text(encoding="utf-8")
         data = yaml.safe_load(raw)
