@@ -254,6 +254,15 @@ class FuzzTestingCheck(BaseCheck):
     source = "Blog: 80% problem - catching what AI misses"
 
     def run(self, context: RepoContext) -> CheckResult:
+        dep_files = [
+            "pom.xml",
+            "build.gradle",
+            "build.gradle.kts",
+        ]
+        for dep_file in dep_files:
+            if context.search_any_file([dep_file, f"*/{dep_file}"], "jazzer-junit"):
+                return self.pass_result(f"Jazzer fuzz testing library found in {dep_file}")
+
         fuzz_dir = context.has_dir("fuzz", "fuzz_targets", "fuzzing")
         if fuzz_dir:
             return self.pass_result(f"Fuzz testing directory found: {fuzz_dir}")
@@ -263,6 +272,8 @@ class FuzzTestingCheck(BaseCheck):
             "fuzz/*.py",
             "fuzz_test.go",
             "*_fuzz_test.go",
+            "*FuzzTest.java",
+            "*FuzzTest.kt",
         )
         if fuzz_file:
             return self.pass_result(f"Fuzz target found: {fuzz_file}")
