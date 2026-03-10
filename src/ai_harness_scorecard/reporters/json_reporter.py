@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..models import Assessment, CategoryResult, CheckResult
@@ -14,7 +14,7 @@ def render_json(assessment: Assessment) -> str:
     return json.dumps(_serialize(assessment), indent=2)
 
 
-def _serialize(assessment: Assessment) -> dict:
+def _serialize(assessment: Assessment) -> dict[str, Any]:
     return {
         "repo_path": assessment.repo_path,
         "repo_name": assessment.repo_name,
@@ -29,7 +29,7 @@ def _serialize(assessment: Assessment) -> dict:
     }
 
 
-def _serialize_category(category: CategoryResult) -> dict[str, object]:
+def _serialize_category(category: CategoryResult) -> dict[str, Any]:
     return {
         "category_id": category.category_id,
         "name": category.name,
@@ -41,7 +41,7 @@ def _serialize_category(category: CategoryResult) -> dict[str, object]:
     }
 
 
-def _serialize_check(check: CheckResult) -> dict[str, object]:
+def _serialize_check(check: CheckResult) -> dict[str, Any]:
     return {
         "check_id": check.check_id,
         "name": check.name,
