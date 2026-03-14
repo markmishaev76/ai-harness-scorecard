@@ -148,7 +148,61 @@ Each check in the scorecard cites a `source` field linking back to one of these 
 - **URL**: https://github.blog/security/vulnerability-research/bugs-that-survive-the-heat-of-continuous-fuzzing/
 - **Relevance**: Even projects fuzzed for 7+ years harbor serious vulnerabilities. GStreamer: 7 years of fuzzing, only 19% code coverage. Fuzzing requires active human oversight. Supports our `fuzz_testing` check and shows that presence alone is insufficient.
 
+## Practitioner Guides
+
+### Simon Willison — "Agentic Engineering Patterns" (Feb–Mar 2026)
+
+- **Type**: Evolving guide (11 chapters)
+- **URL**: https://simonwillison.net/guides/agentic-engineering-patterns/
+- **Relevance**: The most practical and grounded guide to working with coding agents, written from daily hands-on experience by the creator of Datasette. Directly validates and extends the scorecard's philosophy.
+- **Key concepts**:
+  - **"Shipping worse code is a choice"**: Code production cost is near-zero, so use the savings to pay down technical debt, not accumulate it. Refactoring tasks (splitting large files, renaming concepts, fixing API duplication) are ideal for background agents.
+  - **#1 anti-pattern**: Filing PRs with unreviewed agent-generated code. Agents write convincing PR descriptions — review those too. Include evidence of manual testing.
+  - **Red/green TDD**: Write the failing test, let the agent make it pass. Mechanical success criterion. Independently confirms the same pattern from Kent Beck and the consolidated guide.
+  - **Agentic manual testing**: Never assume LLM-generated code works until it has been executed. Agents should test their own output.
+  - **Compound engineering loop**: Retrospective after each AI project, document what worked, feed it forward. Maps to the DECISIONS.md and LESSONS.md patterns.
+  - **"Code is cheap now"**: Things that used to be "not worth the effort" (prototyping alternatives, fixing naming inconsistencies) are now trivial. Use async agents (Gemini Jules, Codex web, Claude Code web) for background refactoring.
+- **Checks supported**: `test_suite_exists`, `tests_blocking_ci`, `code_review_required`, `small_batch_enforcement`, `ai_usage_norms`, `multiple_approach_culture`
+
+### Trail of Bits — "How We Made Trail of Bits AI-Native (So Far)" (Mar 2026)
+
+- **Type**: Conference presentation + open-source tooling
+- **URL**: https://github.com/trailofbits/publications/tree/master/presentations/How%20we%20made%20Trail%20of%20Bits%20AI-Native%20%28so%20far%29
+- **Relevance**: Dan Guido (CEO, Trail of Bits) at [un]prompted conference. Trail of Bits is a security auditing firm — their AI-native strategy is directly applicable to security-focused development. Provides concrete artifacts, not just philosophy.
+- **Key concepts**:
+  - **Compounding operating system**: AI isn't a feature you adopt. Build from incentives, defaults, guardrails, and verification loops that let humans and agents ship high-rigor work at higher throughput.
+  - **[claude-code-config](https://github.com/trailofbits/claude-code-config)** (1,585 stars): Opinionated Claude Code defaults. Skip permission prompts, rely on OS-level sandboxing + hooks. Includes security scanners, linters, MCP servers.
+  - **[trailofbits/skills](https://github.com/trailofbits/skills)** (3,525 stars): Reusable agent instructions for smart contract security, code auditing, malware analysis, vulnerability detection.
+  - **[trailofbits/skills-curated](https://github.com/trailofbits/skills-curated)**: Vetted marketplace of community-reviewed skills. Addresses the trust problem — unreviewed skills could contain backdoors.
+  - **Verification loops**: When discovery (finding issues) becomes abundant via AI, the value shifts to verification rigor. Pricing, staffing, and delivery models change.
+- **Checks supported**: `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `ai_usage_norms`, `security_critical_marking`
+
+### BMad Method — BMAD-METHOD (2025–2026)
+
+- **Type**: Open-source AI-driven agile framework (40.6k stars, 5k forks)
+- **URL**: https://github.com/bmad-code-org/BMAD-METHOD
+- **Relevance**: The most popular structured framework for AI-assisted agile development. Provides concrete workflow patterns for the full development lifecycle.
+- **Key concepts**:
+  - **Scale-Domain-Adaptive**: Automatically adjusts planning depth based on project complexity. A bug fix skips the full spec workflow; a new system gets the full treatment. Relevant to how teams calibrate AI guardrail depth.
+  - **12+ specialized agents**: PM, Architect, Developer, UX, Scrum Master, each with domain expertise. Matches Uber's pattern of specialized over general-purpose agents.
+  - **Party Mode**: Multiple agent personas collaborate in one session, discussing trade-offs. Multi-agent orchestration within a single context.
+  - **BMad Help**: A meta-skill that tells you "what's next" at any point. Useful for onboarding teams to structured AI-assisted workflows.
+  - **Modules**: Core method (34+ workflows), Test Architect (risk-based test strategy), Builder (create custom agents).
+- **Checks supported**: `agent_instructions`, `multiple_approach_culture`, `ai_usage_norms`
+
 ## Blog Posts & Articles
+
+### David Cramer / Sentry — "Optimizing Content for Agents" (Mar 2026)
+
+- **Type**: Engineering blog post
+- **URL**: https://cra.mr/optimizing-content-for-agents/
+- **Relevance**: Sentry's CTO on making web content consumable by AI agents. Demonstrates that documentation needs to be agent-readable, not just human-readable — directly relevant to why `architecture_doc` and `agent_instructions` checks matter.
+- **Key concepts**:
+  - **Content negotiation**: When `Accept: text/markdown`, serve optimized markdown instead of HTML. Massive token savings and improved accuracy for agents.
+  - **Docs optimization**: Serve true markdown, strip browser-only elements, optimize index pages as sitemaps.
+  - **App UI redirect**: When a headless agent hits auth-required web UI, redirect to programmatic access (MCP server, CLI, API) instead of a useless login page.
+  - **Full content bootstrap**: For smaller projects, serve the entire content so an agent can ingest it in one request.
+- **Checks supported**: `architecture_doc`, `agent_instructions`, `api_contracts`
 
 ### "How to Kill the Code Review" — Latent Space (Mar 2026)
 
@@ -255,6 +309,29 @@ Each check in the scorecard cites a `source` field linking back to one of these 
   - **Agentic flywheel**: Agents evaluating loop performance and recommending harness improvements. The harness becomes self-improving when fed test results, pipeline metrics, and production data.
   - **Shift left for agents**: Agents produce better code when they can gauge quality themselves (tests, lints, type checks) rather than relying on humans to check after.
   - **Multiple how-loop levels**: Outer loops (feature), middle loops (stories), inner loops (code). Each needs its own validation. Richer feedback loops produce better outcomes.
+
+### Simon Willison — "Clinejection: Prompt Injection via Issue Triager" (Mar 2026)
+
+- **Type**: Blog post / security analysis
+- **URL**: https://simonwillison.net/2026/Mar/6/#clinejection
+- **Relevance**: Documents a prompt injection attack against an AI-powered issue triage bot that led to a compromised npm package release (`cline@2.3.0`). AI agents with CI/CD write access are attack surface.
+- **Key findings**:
+  - Attack chain: malicious issue title → prompt injection → `npm install` backdoored package → cache poisoning → stolen npm publishing secrets
+  - GitHub Actions caches can share the same name across different workflows, enabling cross-workflow cache poisoning
+  - AI agents that run on untrusted input (issue titles, PR descriptions) with tool access are inherently vulnerable to injection
+- **Checks supported**: `security_critical_marking`, `ai_usage_norms`, `ci_pipeline_exists`
+
+### Simon Willison — "Shopify/Liquid: 53% Faster via Autoresearch" (Mar 2026)
+
+- **Type**: Blog post / case study
+- **URL**: https://simonwillison.net/2026/Mar/13/#shopifyliquid
+- **Relevance**: Shopify CEO used an agent to run 120 automated experiments finding performance optimizations in a 20-year-old codebase (974 unit tests). Demonstrates that robust test suites are the primary unlock for agent-driven optimization. Benchmarking scripts make "make it faster" an actionable agent goal.
+- **Key findings**:
+  - 53% improvement on benchmarks from 93 commits via ~120 automated experiments
+  - A robust test suite is a "massive unlock" for agent-driven work
+  - The autoresearch pattern (brainstorm improvements, experiment one at a time) is effective for optimization
+  - CEOs and people in high-interruption roles can productively work with code again via agents
+- **Checks supported**: `test_suite_exists`, `tests_blocking_ci`, `coverage_measurement`
 
 ### Ars Contexta — Memory Infrastructure for Claude Code
 
@@ -368,6 +445,12 @@ Each check in the scorecard cites a `source` field linking back to one of these 
 | Huntley: Ralph Wiggum technique | `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `test_suite_exists`, `tests_blocking_ci` |
 | Ars Contexta (memory plugin) | `agent_instructions`, `architecture_doc` |
 | Morris: Humans & Agents (Fowler) | `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `test_suite_exists`, `tests_blocking_ci`, `coverage_measurement`, `automated_review` |
+| Willison: Agentic Engineering Patterns | `test_suite_exists`, `tests_blocking_ci`, `code_review_required`, `small_batch_enforcement`, `ai_usage_norms`, `multiple_approach_culture` |
+| Trail of Bits: AI-Native (Guido) | `agent_instructions`, `linter_enforcement`, `formatter_enforcement`, `type_safety`, `ai_usage_norms`, `security_critical_marking` |
+| BMad Method (BMAD-METHOD) | `agent_instructions`, `multiple_approach_culture`, `ai_usage_norms` |
+| Cramer: Optimizing Content for Agents | `architecture_doc`, `agent_instructions`, `api_contracts` |
+| Willison: Clinejection analysis | `security_critical_marking`, `ai_usage_norms`, `ci_pipeline_exists` |
+| Willison: Shopify autoresearch | `test_suite_exists`, `tests_blocking_ci`, `coverage_measurement` |
 
 ## Contributing
 
