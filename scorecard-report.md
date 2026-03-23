@@ -4,7 +4,7 @@
 
 - **Repository**: `/home/runner/work/ai-harness-scorecard/ai-harness-scorecard`
 - **Languages**: python
-- **Assessed**: 2026-03-09 07:10 UTC
+- **Assessed**: 2026-03-23 07:20 UTC
 - **Checks**: 30/31 passed
 
 ## Summary
@@ -203,7 +203,7 @@ _DORA 2025 - clear organizational stance on AI use_
 
 _DORA 2025 - working in small batches_
 
-**Evidence**: Small batch guidelines found in CONTRIBUTING.md
+**Evidence**: PR size check tool found in CI
 
 ### [PASS] Design-Before-Code Culture (3/3)
 
