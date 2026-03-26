@@ -62,6 +62,8 @@ class LinterEnforcementCheck(BaseCheck):
         r"ktlint",
         r"swiftlint",
         r"checkstyle",
+        r"pmd:(check|pmd)",
+        r"\bpmd(Main|Test)?\b",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
@@ -83,6 +85,34 @@ class LinterEnforcementCheck(BaseCheck):
                 "Checkstyle config found but not confirmed in CI",
                 "Add checkstyle to your CI pipeline as a blocking job.",
             )
+
+        if "java" in context.languages:
+            pmd_config = context.has_file("pmd.xml", "*/pmd.xml")
+            if pmd_config:
+                return self.partial_result(
+                    2.0,
+                    "PMD config found but not confirmed in CI",
+                    "Add PMD to your CI pipeline as a blocking job.",
+                )
+
+            pom_xml = context.has_file("pom.xml")
+            if pom_xml and context.search_file(pom_xml, r"maven-pmd-plugin"):
+                return self.partial_result(
+                    2.0,
+                    "PMD config found but not confirmed in CI",
+                    "Add PMD to your CI pipeline as a blocking job.",
+                )
+
+            gradle_file = context.has_file("build.gradle", "build.gradle.kts")
+            pmd_gradle_pattern = (
+                r'id\("pmd"\)|id\s+[\'"]pmd[\'"]|apply\s+plugin:\s*[\'"]pmd[\'"]|pmd\s*\{'
+            )
+            if gradle_file and context.search_file(gradle_file, pmd_gradle_pattern):
+                return self.partial_result(
+                    2.0,
+                    "PMD config found but not confirmed in CI",
+                    "Add PMD to your CI pipeline as a blocking job.",
+                )
 
         return self.fail_result(
             "No linter found in CI",
