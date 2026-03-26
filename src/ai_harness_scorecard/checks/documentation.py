@@ -143,7 +143,7 @@ class APIContractsCheck(BaseCheck):
     source = "DORA 2025 - AI-accessible documentation"
 
     def run(self, context: RepoContext) -> CheckResult:
-        doc_gen_pattern = r"cargo\s+doc|rustdoc|typedoc|jsdoc|sphinx|mkdocs|pdoc|javadoc|godoc|swag"
+        doc_gen_pattern = r"cargo\s+doc|rustdoc|typedoc|jsdoc|sphinx|mkdocs|pdoc|javadoc|godoc|swag|dokka"
         if context.ci_has_command(doc_gen_pattern):
             return self.pass_result("Doc generation found in CI")
 
@@ -153,9 +153,21 @@ class APIContractsCheck(BaseCheck):
             "openapi.yml",
             "swagger.yaml",
             "swagger.json",
+            "docs/openapi*.yaml",
+            "docs/openapi*.json",
+            "docs/openapi*.yml",
+            "api-docs/*.yaml",
+            "api-docs/*.json",
         )
         if spec_file:
             return self.pass_result(f"API spec found: {spec_file}")
+
+        dep_files = ["build.gradle", "build.gradle.kts", "*/build.gradle.kts"]
+        for dep_file in dep_files:
+            if context.search_any_file([dep_file], r"springdoc-openapi|springfox"):
+                return self.pass_result(
+                    f"Runtime API documentation library found in {dep_file}"
+                )
 
         doc_config = context.has_file(
             "mkdocs.yml",

@@ -109,6 +109,9 @@ class FormatterEnforcementCheck(BaseCheck):
         r"scalafmt\s+--check",
         r"spotless:check",
         r"spotlessCheck",
+        r"\.?/?gradlew\s+spotlessCheck",
+        r"ktlintCheck",
+        r"ktfmt",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
@@ -223,7 +226,14 @@ class DependencyAuditingCheck(BaseCheck):
                     "Make the audit job blocking (remove allow_failure / continue-on-error).",
                 )
 
-        dep_config = context.has_file("deny.toml", ".cargo/audit.toml", ".snyk", "renovate.json")
+        dep_config = context.has_file(
+            "deny.toml",
+            ".cargo/audit.toml",
+            ".snyk",
+            "renovate.json",
+            ".github/dependabot.yml",
+            ".github/dependabot.yaml",
+        )
         if dep_config:
             return self.partial_result(
                 1.0,

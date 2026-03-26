@@ -116,7 +116,84 @@ jobs:
         assert not result.passed
 
 
+class TestTestSuiteExistsCheck:
+    def test_pass_with_gradlew_in_ci(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.testing import TestSuiteExistsCheck
+
+        ci_content = """
+name: Unit Test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew test
+"""
+        context = _build_context(
+            tmp_path, {"src/test/README.md": "", ".github/workflows/ci.yml": ci_content}
+        )
+        result = TestSuiteExistsCheck().run(context)
+        assert result.passed
+
+    def test_pass_with_gradle_wrapper_no_dot_slash(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.testing import TestSuiteExistsCheck
+
+        ci_content = """
+name: Test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gradlew test
+"""
+        context = _build_context(
+            tmp_path, {"src/test/README.md": "", ".github/workflows/ci.yml": ci_content}
+        )
+        result = TestSuiteExistsCheck().run(context)
+        assert result.passed
+
+
+class TestAPIContractsCheck:
+    def test_pass_with_springdoc_in_gradle(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import APIContractsCheck
+
+        gradle_content = """
+dependencies {
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
+}
+"""
+        context = _build_context(tmp_path, {"build.gradle.kts": gradle_content})
+        result = APIContractsCheck().run(context)
+        assert result.passed
+
+    def test_pass_with_openapi_yaml(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import APIContractsCheck
+
+        context = _build_context(tmp_path, {"openapi.yaml": "openapi: 3.0.0"})
+        result = APIContractsCheck().run(context)
+        assert result.passed
+
+
 class TestFormatterEnforcementCheck:
+    def test_pass_with_ktlint_check_in_ci(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.constraints import FormatterEnforcementCheck
+
+        ci_content = """
+name: Lint
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew clean ktlintCheck
+"""
+        context = _build_context(
+            tmp_path, {".github/workflows/ci.yml": ci_content}
+        )
+        result = FormatterEnforcementCheck().run(context)
+        assert result.passed
+
     def test_pass_with_spotless_in_ci(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.constraints import FormatterEnforcementCheck
 
@@ -217,6 +294,24 @@ jobs:
         result = DependencyAuditingCheck().run(context)
         assert result.passed
         assert "dependency-check-maven" in result.evidence
+
+    def test_partial_with_dependabot_config(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.constraints import DependencyAuditingCheck
+
+        dependabot_content = """
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+"""
+        context = _build_context(
+            tmp_path, {".github/dependabot.yml": dependabot_content}
+        )
+        result = DependencyAuditingCheck().run(context)
+        assert result.passed
+        assert result.score == pytest.approx(1.0)
 
     def test_dependency_auditing_fail(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.constraints import DependencyAuditingCheck

@@ -47,7 +47,7 @@ class TestSuiteExistsCheck(BaseCheck):
 
         test_in_ci = context.ci_has_command(
             r"cargo\s+(test|nextest)|pytest|jest|mocha|vitest|go\s+test|rspec|"
-            r"gradle\s+test|mvn\s+test|dotnet\s+test"
+            r"gradlew?\s+test|\.\/gradlew\s+test|mvn\s+test|dotnet\s+test"
         )
 
         if has_tests and test_in_ci:
