@@ -128,6 +128,92 @@ jobs:
     ),
 ]
 
+SPOTBUGS_PARTIAL_LINTER_CASES: list[tuple[dict[str, str], float, str]] = [
+    (
+        {"pom.xml": "<project><plugin>spotbugs-maven-plugin</plugin></project>"},
+        2.0,
+        "spotbugs config found",
+    ),
+    (
+        {"services/app/pom.xml": "<project><plugin>spotbugs-maven-plugin</plugin></project>"},
+        2.0,
+        "spotbugs config found",
+    ),
+    (
+        {
+            "build.gradle": """
+        plugins {
+            id "com.github.spotbugs"
+        }
+        """
+        },
+        2.0,
+        "spotbugs config found",
+    ),
+    (
+        {
+            "services/app/build.gradle": """
+        plugins {
+            id "com.github.spotbugs"
+        }
+        """
+        },
+        2.0,
+        "spotbugs config found",
+    ),
+    (
+        {
+            "services/app/build.gradle.kts": """
+        plugins {
+            id("com.github.spotbugs")
+        }
+        """
+        },
+        2.0,
+        "spotbugs config found",
+    ),
+    (
+        {"pom.xml": "<project/>", "spotbugs-exclude.xml": "<FindBugsFilter/>"},
+        2.0,
+        "spotbugs config found",
+    ),
+]
+
+SPOTBUGS_CI_LINTER_CASES: list[tuple[dict[str, str], float, str]] = [
+    (
+        {
+            "pom.xml": "<project/>",
+            ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: mvn spotbugs:check
+""",
+        },
+        4.0,
+        "spotbugs",
+    ),
+    (
+        {
+            "build.gradle": "plugins {}",
+            ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./gradlew spotbugsMain
+""",
+        },
+        4.0,
+        "spotbugs",
+    ),
+]
+
 
 class TestArchitectureDocCheck:
     def test_pass_with_architecture_md(self, tmp_path: Path) -> None:
@@ -204,12 +290,14 @@ jobs:
                 "checkstyle",
             ),
             *PMD_CI_LINTER_CASES,
+            *SPOTBUGS_CI_LINTER_CASES,
             (
                 {"pom.xml": "<project/>", "checkstyle.xml": "<checkstyle/>"},
                 2.0,
                 "checkstyle config found",
             ),
             *PMD_PARTIAL_LINTER_CASES,
+            *SPOTBUGS_PARTIAL_LINTER_CASES,
         ],
     )
     def test_linter_enforcement_pass(
@@ -253,6 +341,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: mvn pmd:pmd
+""",
+            },
+            {
+                "pom.xml": "<project/>",
+                ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cat config/spotbugs-exclude.xml
+""",
+            },
+            {
+                "pom.xml": "<project/>",
+                ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo com.github.spotbugs
+""",
+            },
+            {
+                "pom.xml": "<project/>",
+                ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "spotbugs should run later"
 """,
             },
         ],

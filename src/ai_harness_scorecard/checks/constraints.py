@@ -64,6 +64,8 @@ class LinterEnforcementCheck(BaseCheck):
         r"checkstyle",
         r"\bpmd:(check|aggregate-pmd-check)\b",
         r"\b(?:\./)?gradlew?\b.*\b(pmdMain|pmdTest)\b",
+        r"\bspotbugs:check\b",
+        r"\b(?:\./)?gradlew?\b.*\bspotbugs(Main|Test)\b",
     ]
 
     def run(self, context: RepoContext) -> CheckResult:
@@ -78,6 +80,19 @@ class LinterEnforcementCheck(BaseCheck):
                 "*/build.gradle.kts",
             ],
             pmd_gradle_pattern,
+        )
+        spotbugs_gradle_pattern = (
+            r'id\("com\.github\.spotbugs"\)|id\s+[\'"]com\.github\.spotbugs[\'"]|'
+            r'apply\s+plugin:\s*[\'"]com\.github\.spotbugs[\'"]|spotbugs\s*\{'
+        )
+        has_spotbugs_gradle_config = context.search_any_file(
+            [
+                "build.gradle",
+                "*/build.gradle",
+                "build.gradle.kts",
+                "*/build.gradle.kts",
+            ],
+            spotbugs_gradle_pattern,
         )
 
         for pattern in self.LINTER_PATTERNS:
@@ -119,6 +134,20 @@ class LinterEnforcementCheck(BaseCheck):
                     2.0,
                     "PMD config found but not confirmed in CI",
                     "Add PMD to your CI pipeline as a blocking job.",
+                )
+
+            spotbugs_config = context.has_file("spotbugs-exclude.xml", "*/spotbugs-exclude.xml")
+            spotbugs_pom = context.search_any_file(
+                ["pom.xml", "*/pom.xml"], r"spotbugs-maven-plugin"
+            )
+            has_spotbugs_config = bool(
+                spotbugs_config or spotbugs_pom or has_spotbugs_gradle_config
+            )
+            if has_spotbugs_config:
+                return self.partial_result(
+                    2.0,
+                    "SpotBugs config found but not confirmed in CI",
+                    "Add SpotBugs to your CI pipeline as a blocking job.",
                 )
 
         return self.fail_result(
