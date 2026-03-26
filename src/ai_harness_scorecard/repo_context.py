@@ -17,11 +17,18 @@ LANGUAGE_INDICATORS: dict[str, list[str]] = {
     "javascript": ["package.json"],
     "typescript": ["tsconfig.json"],
     "go": ["go.mod"],
-    "java": ["pom.xml", "build.gradle", "build.gradle.kts"],
+    "java": [
+        "pom.xml",
+        "*/pom.xml",
+        "build.gradle",
+        "*/build.gradle",
+        "build.gradle.kts",
+        "*/build.gradle.kts",
+    ],
     "ruby": ["Gemfile"],
     "csharp": ["*.csproj", "*.sln"],
     "swift": ["Package.swift"],
-    "kotlin": ["build.gradle.kts"],
+    "kotlin": ["build.gradle.kts", "*/build.gradle.kts"],
 }
 
 IGNORED_DIRS = frozenset(

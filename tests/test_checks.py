@@ -62,10 +62,12 @@ class TestAgentInstructionsCheck:
 
 
 class TestLinterEnforcementCheck:
-    def test_pass_with_ruff_in_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        ci_content = """
+    @pytest.mark.parametrize(
+        ("files", "expected_score", "evidence_substring"),
+        [
+            (
+                {
+                    ".github/workflows/ci.yml": """\
 name: CI
 on: push
 jobs:
@@ -74,14 +76,14 @@ jobs:
     steps:
       - run: ruff check src/
 """
-        context = _build_context(tmp_path, {".github/workflows/ci.yml": ci_content})
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-
-    def test_pass_with_checkstyle_in_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        ci_content = """
+                },
+                4.0,
+                "ruff",
+            ),
+            (
+                {
+                    "pom.xml": "<project/>",
+                    ".github/workflows/ci.yml": """\
 name: CI
 on: push
 jobs:
@@ -89,18 +91,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: mvn checkstyle:check
-"""
-        context = _build_context(
-            tmp_path, {"pom.xml": "<project/>", ".github/workflows/ci.yml": ci_content}
-        )
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert "checkstyle" in result.evidence.lower()
-
-    def test_pass_with_pmd_in_maven_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        ci_content = """
+""",
+                },
+                4.0,
+                "checkstyle",
+            ),
+            (
+                {
+                    "pom.xml": "<project/>",
+                    ".github/workflows/ci.yml": """\
 name: CI
 on: push
 jobs:
@@ -108,19 +107,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: mvn pmd:check
-"""
-        context = _build_context(
-            tmp_path, {"pom.xml": "<project/>", ".github/workflows/ci.yml": ci_content}
-        )
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(4.0)
-        assert "pmd" in result.evidence.lower()
-
-    def test_pass_with_pmd_in_gradle_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        ci_content = """
+""",
+                },
+                4.0,
+                "pmd",
+            ),
+            (
+                {
+                    "build.gradle": "plugins {}",
+                    ".github/workflows/ci.yml": """\
 name: CI
 on: push
 jobs:
@@ -128,63 +123,81 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: ./gradlew pmdMain
-"""
-        context = _build_context(
-            tmp_path, {"build.gradle": "plugins {}", ".github/workflows/ci.yml": ci_content}
-        )
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(4.0)
-        assert "pmd" in result.evidence.lower()
-
-    def test_partial_with_checkstyle_xml_no_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        context = _build_context(
-            tmp_path, {"pom.xml": "<project/>", "checkstyle.xml": "<checkstyle/>"}
-        )
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(2.0)
-        assert "checkstyle config found" in result.evidence.lower()
-
-    def test_partial_with_pmd_xml_no_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        context = _build_context(tmp_path, {"pom.xml": "<project/>", "pmd.xml": "<pmd/>"})
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(2.0)
-        assert "pmd config found" in result.evidence.lower()
-
-    def test_partial_with_maven_pmd_plugin_no_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        pom_content = "<project><plugin>maven-pmd-plugin</plugin></project>"
-        context = _build_context(tmp_path, {"pom.xml": pom_content})
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(2.0)
-        assert "pmd config found" in result.evidence.lower()
-
-    def test_partial_with_gradle_pmd_plugin_no_ci(self, tmp_path: Path) -> None:
-        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
-
-        gradle_content = """
+""",
+                },
+                4.0,
+                "pmd",
+            ),
+            (
+                {"pom.xml": "<project/>", "checkstyle.xml": "<checkstyle/>"},
+                2.0,
+                "checkstyle config found",
+            ),
+            (
+                {"pom.xml": "<project/>", "pmd.xml": "<pmd/>"},
+                2.0,
+                "pmd config found",
+            ),
+            (
+                {"pom.xml": "<project><plugin>maven-pmd-plugin</plugin></project>"},
+                2.0,
+                "pmd config found",
+            ),
+            (
+                {"services/app/pom.xml": "<project><plugin>maven-pmd-plugin</plugin></project>"},
+                2.0,
+                "pmd config found",
+            ),
+            (
+                {
+                    "build.gradle": """
         plugins {
             id "pmd"
         }
         """
-        context = _build_context(tmp_path, {"build.gradle": gradle_content})
-        result = LinterEnforcementCheck().run(context)
-        assert result.passed
-        assert result.score == pytest.approx(2.0)
-        assert "pmd config found" in result.evidence.lower()
-
-    def test_fail_without_ci(self, tmp_path: Path) -> None:
+                },
+                2.0,
+                "pmd config found",
+            ),
+        ],
+    )
+    def test_linter_enforcement_pass(
+        self,
+        tmp_path: Path,
+        files: dict[str, str],
+        expected_score: float,
+        evidence_substring: str,
+    ) -> None:
         from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
 
-        context = _build_context(tmp_path)
+        context = _build_context(tmp_path, files)
+        result = LinterEnforcementCheck().run(context)
+        assert result.passed
+        assert result.score == pytest.approx(expected_score)
+        assert evidence_substring in result.evidence.lower()
+
+    @pytest.mark.parametrize(
+        "files",
+        [
+            None,
+            {
+                "pom.xml": "<project/>",
+                ".github/workflows/ci.yml": """\
+name: CI
+on: push
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cat config/pmd.xml
+""",
+            },
+        ],
+    )
+    def test_linter_enforcement_fail(self, tmp_path: Path, files: dict[str, str] | None) -> None:
+        from ai_harness_scorecard.checks.constraints import LinterEnforcementCheck
+
+        context = _build_context(tmp_path, files)
         result = LinterEnforcementCheck().run(context)
         assert not result.passed
 
