@@ -46,7 +46,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-      - run: pip-audit
+      - run: pip-audit --ignore-vuln CVE-2026-4539  # pygments 2.19.2, no fix available yet
 
   test:
     runs-on: ubuntu-latest
