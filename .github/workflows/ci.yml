@@ -46,11 +46,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
-<<<<<<< HEAD
-      - run: pip-audit --ignore-vuln CVE-2026-4539  # pygments 2.19.2, no fix available yet
-=======
-      - run: pip-audit --skip ai-harness-scorecard
->>>>>>> 676cebd (ci: skip ai-harness-scorecard dependency)
+      - run: pip-audit --ignore-vuln CVE-2026-4539 # pygments 2.19.2, no fix available yet
 
   test:
     runs-on: ubuntu-latest
