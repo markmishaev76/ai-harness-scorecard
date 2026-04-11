@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-github = ["PyGithub>=2.0"]
+github = ["PyGithub>=2.9.0"]
 gitlab = ["python-gitlab>=4.0"]
 all = ["ai-harness-scorecard[github,gitlab]"]
 dev = [
