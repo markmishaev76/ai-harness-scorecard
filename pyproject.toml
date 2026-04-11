@@ -32,7 +32,7 @@ gitlab = ["python-gitlab>=4.0"]
 all = ["ai-harness-scorecard[github,gitlab]"]
 dev = [
     "pytest>=8.0",
-    "pytest-cov>=5.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.15.4",
     "mypy>=1.19.1",
     "types-PyYAML>=6.0",
