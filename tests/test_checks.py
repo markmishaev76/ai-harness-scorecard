@@ -293,7 +293,7 @@ class TestAgentInstructionsCheck:
 
 
 class TestHarnessDocsCheck:
-    def test_harness_docs_pass_with_ci_pipeline_docs(self, tmp_path: Path) -> None:
+    def test_harness_docs_pass(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
 
         context = _build_context(
@@ -313,7 +313,7 @@ class TestHarnessDocsCheck:
         assert result.score == pytest.approx(2.0)
         assert "quality pipeline" in result.evidence.lower()
 
-    def test_harness_docs_partial_with_contributing_only(self, tmp_path: Path) -> None:
+    def test_harness_docs_pass_partial(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
 
         context = _build_context(tmp_path, {"CONTRIBUTING.md": "# Contributing\n\nWelcome."})
@@ -322,7 +322,7 @@ class TestHarnessDocsCheck:
         assert result.score == pytest.approx(1.0)
         assert "contributing.md" in result.evidence.lower()
 
-    def test_harness_docs_fail_without_pipeline_docs(self, tmp_path: Path) -> None:
+    def test_harness_docs_fail(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
 
         context = _build_context(tmp_path, {"README.md": "# Project"})
@@ -346,7 +346,7 @@ class TestHarnessDocsCheck:
         uppercase=st.booleans(),
     )
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-    def test_harness_docs_pass_with_pipeline_wording_variants(
+    def test_harness_docs_pass_variants(
         self,
         tmp_path: Path,
         words: tuple[str, ...],
