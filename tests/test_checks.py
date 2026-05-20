@@ -290,6 +290,46 @@ class TestAgentInstructionsCheck:
         assert not result.passed
 
 
+class TestHarnessDocsCheck:
+    def test_harness_docs_pass_with_ci_pipeline_docs(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(
+            tmp_path,
+            {
+                "docs/development.md": (
+                    "# Development\n\n"
+                    "## CI pipeline\n\n"
+                    "The quality gates run lint, type checks, security scans, and tests. "
+                    "To add a new check, update the CI workflow and document the new gate here."
+                )
+            },
+        )
+        result = HarnessDocsCheck().run(context)
+        assert result.check_id == "documentation.harness_docs"
+        assert result.passed
+        assert result.score == pytest.approx(2.0)
+        assert "quality pipeline" in result.evidence.lower()
+
+    def test_harness_docs_partial_with_contributing_only(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(tmp_path, {"CONTRIBUTING.md": "# Contributing\n\nWelcome."})
+        result = HarnessDocsCheck().run(context)
+        assert result.passed
+        assert result.score == pytest.approx(1.0)
+        assert "contributing.md" in result.evidence.lower()
+
+    def test_harness_docs_fail_without_pipeline_docs(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(tmp_path, {"README.md": "# Project"})
+        result = HarnessDocsCheck().run(context)
+        assert not result.passed
+        assert result.score == pytest.approx(0.0)
+        assert "quality pipeline" in result.remediation.lower()
+
+
 class TestLinterEnforcementCheck:
     @pytest.mark.parametrize(
         ("files", "expected_score", "evidence_substring"),

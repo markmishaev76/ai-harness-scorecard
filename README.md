@@ -29,10 +29,10 @@ ai-harness-scorecard assess . --format json
 
 ## What It Checks
 
-Five categories, 31 checks, each grounded in published research:
+Five categories, 32 checks, each grounded in published research:
 
 ### 1. Architectural Documentation (20%)
-Architecture docs, agent instructions, ADRs, module boundary constraints, API documentation.
+Architecture docs, agent instructions, harness docs, ADRs, module boundary constraints, API documentation.
 
 ### 2. Mechanical Constraints (25%)
 CI pipeline, linter/formatter enforcement, type safety, dependency auditing, conventional commits, unsafe code policies.
