@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from ai_harness_scorecard.repo_context import RepoContext
 
@@ -328,6 +328,49 @@ class TestHarnessDocsCheck:
         assert not result.passed
         assert result.score == pytest.approx(0.0)
         assert "quality pipeline" in result.remediation.lower()
+
+    @given(
+        words=st.sampled_from(
+            [
+                ("ci", "pipeline"),
+                ("ci", "workflow"),
+                ("quality", "gate"),
+                ("quality", "gates"),
+                ("development", "workflow"),
+                ("run", "in", "ci", "and", "must", "pass"),
+            ]
+        ),
+        separator=st.sampled_from([" ", "  ", "\t"]),
+        uppercase=st.booleans(),
+    )
+    def test_harness_docs_pass_with_pipeline_wording_variants(
+        self,
+        words: tuple[str, ...],
+        separator: str,
+        uppercase: bool,
+    ) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        phrase = separator.join(words)
+        if uppercase:
+            phrase = phrase.upper()
+
+        with TemporaryDirectory() as tmp_dir:
+            context = _build_context(
+                Path(tmp_dir),
+                {
+                    "docs/development.md": (
+                        "# Development\n\n"
+                        f"## {phrase}\n\n"
+                        "Document the checks contributors run before merging changes."
+                    )
+                },
+            )
+
+            result = HarnessDocsCheck().run(context)
+
+        assert result.passed
+        assert result.score == pytest.approx(2.0)
 
 
 class TestLinterEnforcementCheck:

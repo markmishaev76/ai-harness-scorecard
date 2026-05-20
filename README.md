@@ -66,7 +66,7 @@ Good foundation. Some gaps in enforcement or feedback loops.
 ┌──────────────────────────┬────────┬───────┬────────┐
 │ Category                 │ Weight │ Score │ Checks │
 ├──────────────────────────┼────────┼───────┼────────┤
-│ Architectural Docs       │    20% │   60% │    3/5 │
+│ Architectural Docs       │    20% │   60% │    3/6 │
 │ Mechanical Constraints   │    25% │   91% │    6/7 │
 │ Testing & Stability      │    25% │   72% │    5/8 │
 │ Review & Drift           │    15% │   60% │    3/6 │
