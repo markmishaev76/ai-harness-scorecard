@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from ai_harness_scorecard.repo_context import RepoContext
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _build_context(tmp_path: Path, files: dict[str, str] | None = None) -> RepoContext:
@@ -343,8 +345,10 @@ class TestHarnessDocsCheck:
         separator=st.sampled_from([" ", "  ", "\t"]),
         uppercase=st.booleans(),
     )
+    @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     def test_harness_docs_pass_with_pipeline_wording_variants(
         self,
+        tmp_path: Path,
         words: tuple[str, ...],
         separator: str,
         uppercase: bool,
@@ -355,19 +359,17 @@ class TestHarnessDocsCheck:
         if uppercase:
             phrase = phrase.upper()
 
-        with TemporaryDirectory() as tmp_dir:
-            context = _build_context(
-                Path(tmp_dir),
-                {
-                    "docs/development.md": (
-                        "# Development\n\n"
-                        f"## {phrase}\n\n"
-                        "Document the checks contributors run before merging changes."
-                    )
-                },
-            )
-
-            result = HarnessDocsCheck().run(context)
+        context = _build_context(
+            tmp_path,
+            {
+                "docs/development.md": (
+                    "# Development\n\n"
+                    f"## {phrase}\n\n"
+                    "Document the checks contributors run before merging changes."
+                )
+            },
+        )
+        result = HarnessDocsCheck().run(context)
 
         assert result.passed
         assert result.score == pytest.approx(2.0)
