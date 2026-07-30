@@ -133,11 +133,14 @@ class RepoContext:
         return False
 
     def ci_has_blocking_command(self, pattern: str) -> bool:
-        """Return True if a non-allow_failure CI job contains a matching command."""
+        """Return True if a blocking CI job or step contains a matching command."""
         regex = re.compile(pattern, re.IGNORECASE)
         for ci in self.ci_configs:
             for job in ci.jobs:
-                if not job.allow_failure and self._matches_command(job.commands, regex):
+                commands = (
+                    job.blocking_commands if job.blocking_commands is not None else job.commands
+                )
+                if not job.allow_failure and self._matches_command(commands, regex):
                     return True
         return False
 

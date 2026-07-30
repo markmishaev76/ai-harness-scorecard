@@ -29,7 +29,7 @@ ai-harness-scorecard assess . --format json
 
 ## What It Checks
 
-Five categories, 31 checks, each grounded in published research:
+Five categories, 32 checks, each grounded in published research:
 
 ### 1. Architectural Documentation (20%)
 Architecture docs, agent instructions, ADRs, module boundary constraints, API documentation.
@@ -38,7 +38,8 @@ Architecture docs, agent instructions, ADRs, module boundary constraints, API do
 CI pipeline, linter/formatter enforcement, type safety, dependency auditing, conventional commits, unsafe code policies.
 
 ### 3. Testing & Stability (25%)
-Test suite in CI, feature matrix testing, code coverage, mutation testing, property-based testing, fuzz testing, contract tests, blocking test jobs.
+Test suite in CI, feature matrix testing, code coverage, mutation testing, code duplication,
+property-based testing, fuzz testing, contract tests, blocking test jobs.
 
 ### 4. Review & Drift Prevention (15%)
 Code review enforcement, scheduled CI, stale doc detection, PR/MR templates, automated review bots, doc sync checks.
@@ -68,7 +69,7 @@ Good foundation. Some gaps in enforcement or feedback loops.
 ├──────────────────────────┼────────┼───────┼────────┤
 │ Architectural Docs       │    20% │   60% │    3/5 │
 │ Mechanical Constraints   │    25% │   91% │    6/7 │
-│ Testing & Stability      │    25% │   72% │    5/8 │
+│ Testing & Stability      │    25% │   72% │    5/9 │
 │ Review & Drift           │    15% │   60% │    3/6 │
 │ AI-Specific Safeguards   │    15% │   67% │    3/5 │
 └──────────────────────────┴────────┴───────┴────────┘

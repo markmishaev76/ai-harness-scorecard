@@ -35,6 +35,7 @@ class CIJob:
 
     name: str
     commands: list[str] = field(default_factory=list)
+    blocking_commands: list[str] | None = None
     allow_failure: bool = False
     stage: str | None = None
 
@@ -152,24 +153,51 @@ def _is_github_scheduled(data: dict[str, Any]) -> bool:
 
 def _create_github_job(name: str, data: dict[str, Any]) -> CIJob:
     commands: list[str] = []
+    blocking_commands: list[str] = []
 
     job_uses = data.get("uses")
     if isinstance(job_uses, str):
         commands.append(f"uses: {job_uses}")
+        blocking_commands.append(_format_github_action(job_uses, data.get("with")))
 
     for step in data.get("steps", []):
         if not isinstance(step, dict):
             continue
+        step_allows_failure = _allows_failure(step.get("continue-on-error", False))
         if "run" in step:
-            commands.append(str(step["run"]))
-        if "uses" in step:
-            commands.append(f"uses: {step['uses']}")
+            command = str(step["run"])
+            commands.append(command)
+            if not step_allows_failure:
+                blocking_commands.append(command)
+        step_uses = step.get("uses")
+        if isinstance(step_uses, str):
+            commands.append(f"uses: {step_uses}")
+            if not step_allows_failure:
+                blocking_commands.append(_format_github_action(step_uses, step.get("with")))
 
     return CIJob(
         name=name,
         commands=commands,
-        allow_failure=bool(data.get("continue-on-error", False)),
+        blocking_commands=blocking_commands,
+        allow_failure=_allows_failure(data.get("continue-on-error", False)),
     )
+
+
+def _allows_failure(value: object) -> bool:
+    """Return true only when continue-on-error is explicitly enabled."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() == "true"
+    return False
+
+
+def _format_github_action(action: str, inputs: object) -> str:
+    command_parts = [f"uses: {action}"]
+    if isinstance(inputs, dict):
+        for key, value in sorted(inputs.items(), key=lambda item: str(item[0])):
+            command_parts.append(f"with.{key}: {value}")
+    return "\n".join(command_parts)
 
 
 def _load_yaml(path: Path) -> tuple[str, dict[str, Any] | None]:

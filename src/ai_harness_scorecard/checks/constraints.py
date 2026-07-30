@@ -23,7 +23,7 @@ JAVA_BUILD_FILES: list[str] = [
 
 
 class CIPipelineExistsCheck(BaseCheck):
-    check_id = "ci_pipeline_exists"
+    check_id = "constraints.ci_pipeline_exists"
     name = "CI Pipeline"
     description = "CI configuration present for automated checks"
     max_points = 3.0
@@ -51,7 +51,7 @@ class CIPipelineExistsCheck(BaseCheck):
 
 
 class LinterEnforcementCheck(BaseCheck):
-    check_id = "linter_enforcement"
+    check_id = "constraints.linter_enforcement"
     name = "Linter Enforcement"
     description = "Linter runs in CI with blocking severity"
     max_points = 4.0
@@ -199,7 +199,7 @@ class LinterEnforcementCheck(BaseCheck):
 
 
 class FormatterEnforcementCheck(BaseCheck):
-    check_id = "formatter_enforcement"
+    check_id = "constraints.formatter_enforcement"
     name = "Formatter Enforcement"
     description = "Code formatter check runs in CI"
     max_points = 3.0
@@ -253,7 +253,7 @@ class FormatterEnforcementCheck(BaseCheck):
 
 
 class TypeSafetyCheck(BaseCheck):
-    check_id = "type_safety"
+    check_id = "constraints.type_safety"
     name = "Type Safety"
     description = "Type checking enforced via language features or tools"
     max_points = 3.0
@@ -298,7 +298,7 @@ class TypeSafetyCheck(BaseCheck):
 
 
 class DependencyAuditingCheck(BaseCheck):
-    check_id = "dependency_auditing"
+    check_id = "constraints.dependency_auditing"
     name = "Dependency Auditing"
     description = "Dependency vulnerability scanning in CI (blocking)"
     max_points = 4.0
@@ -356,7 +356,7 @@ class DependencyAuditingCheck(BaseCheck):
 
 
 class ConventionalCommitsCheck(BaseCheck):
-    check_id = "conventional_commits"
+    check_id = "constraints.conventional_commits"
     name = "Conventional Commits"
     description = "Commit or MR title format enforced in CI"
     max_points = 2.0
@@ -384,7 +384,7 @@ class ConventionalCommitsCheck(BaseCheck):
 
 
 class UnsafeCodePolicyCheck(BaseCheck):
-    check_id = "unsafe_code_policy"
+    check_id = "constraints.unsafe_code_policy"
     name = "Unsafe Code Policy"
     description = "Explicit policy against dangerous code patterns"
     max_points = 3.0

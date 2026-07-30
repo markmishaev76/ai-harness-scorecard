@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class AIUsageNormsCheck(BaseCheck):
-    check_id = "ai_usage_norms"
+    check_id = "ai_safeguards.ai_usage_norms"
     name = "AI Usage Norms"
     description = "Documented policy on AI usage and review expectations"
     max_points = 4.0
@@ -61,7 +61,7 @@ class AIUsageNormsCheck(BaseCheck):
 
 
 class SmallBatchEnforcementCheck(BaseCheck):
-    check_id = "small_batch_enforcement"
+    check_id = "ai_safeguards.small_batch_enforcement"
     name = "Small Batch Enforcement"
     description = "PR/MR size limits or guidelines enforced"
     max_points = 3.0
@@ -93,7 +93,7 @@ class SmallBatchEnforcementCheck(BaseCheck):
 
 
 class MultipleApproachCultureCheck(BaseCheck):
-    check_id = "multiple_approach_culture"
+    check_id = "ai_safeguards.multiple_approach_culture"
     name = "Design-Before-Code Culture"
     description = "RFC process, design docs, or plan-before-code workflow"
     max_points = 3.0
@@ -136,7 +136,7 @@ class MultipleApproachCultureCheck(BaseCheck):
 
 
 class ErrorHandlingPolicyCheck(BaseCheck):
-    check_id = "error_handling_policy"
+    check_id = "ai_safeguards.error_handling_policy"
     name = "Error Handling Policy"
     description = "Policy against panic/crash patterns in code"
     max_points = 3.0
@@ -176,7 +176,7 @@ class ErrorHandlingPolicyCheck(BaseCheck):
 
 
 class SecurityCriticalMarkingCheck(BaseCheck):
-    check_id = "security_critical_marking"
+    check_id = "ai_safeguards.security_critical_marking"
     name = "Security-Critical Path Marking"
     description = "Critical code paths identified for extra review"
     max_points = 2.0
