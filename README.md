@@ -42,7 +42,7 @@ Test suite in CI, feature matrix testing, code coverage, mutation testing, code 
 property-based testing, fuzz testing, contract tests, blocking test jobs.
 
 ### 4. Review & Drift Prevention (15%)
-Code review enforcement, scheduled CI, stale doc detection, PR/MR templates, automated review bots, doc sync checks.
+Code review enforcement, scheduled CI, stale doc detection, PR/MR templates (with testing, risk, and revert sections), automated review bots, doc sync checks.
 
 ### 5. AI-Specific Safeguards (15%)
 AI usage norms, small batch enforcement, design-before-code culture, error handling policies, security-critical path marking.
