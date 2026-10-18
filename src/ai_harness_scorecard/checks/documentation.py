@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class ArchitectureDocCheck(BaseCheck):
-    check_id = "architecture_doc"
+    check_id = "documentation.architecture_doc"
     name = "Architecture Documentation"
     description = "ARCHITECTURE.md or equivalent at repo root (matklad pattern)"
     max_points = 5.0
@@ -39,7 +39,7 @@ class ArchitectureDocCheck(BaseCheck):
 
 
 class AgentInstructionsCheck(BaseCheck):
-    check_id = "agent_instructions"
+    check_id = "documentation.agent_instructions"
     name = "Agent Instructions"
     description = "CLAUDE.md, AGENTS.md, or equivalent AI agent configuration"
     max_points = 5.0
@@ -67,7 +67,7 @@ class AgentInstructionsCheck(BaseCheck):
 
 
 class ADRPresenceCheck(BaseCheck):
-    check_id = "adr_presence"
+    check_id = "documentation.adr_presence"
     name = "Architecture Decision Records"
     description = "ADR directory with decision records"
     max_points = 3.0
@@ -97,7 +97,7 @@ class ADRPresenceCheck(BaseCheck):
 
 
 class ModuleBoundaryDocsCheck(BaseCheck):
-    check_id = "module_boundary_docs"
+    check_id = "documentation.module_boundary_docs"
     name = "Module Boundary Documentation"
     description = "Explicit dependency constraints between modules"
     max_points = 4.0
@@ -136,7 +136,7 @@ class ModuleBoundaryDocsCheck(BaseCheck):
 
 
 class APIContractsCheck(BaseCheck):
-    check_id = "api_contracts"
+    check_id = "documentation.api_contracts"
     name = "API Documentation"
     description = "Public API documented via doc generation or spec files"
     max_points = 3.0

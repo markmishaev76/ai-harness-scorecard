@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class CodeReviewRequiredCheck(BaseCheck):
-    check_id = "code_review_required"
+    check_id = "review.code_review_required"
     name = "Code Review Required"
     description = "PR/MR reviews required before merge"
     max_points = 4.0
@@ -43,7 +43,7 @@ class CodeReviewRequiredCheck(BaseCheck):
 
 
 class ScheduledCICheck(BaseCheck):
-    check_id = "scheduled_ci"
+    check_id = "review.scheduled_ci"
     name = "Scheduled CI Jobs"
     description = "Nightly or periodic CI jobs for drift detection"
     max_points = 3.0
@@ -65,7 +65,7 @@ class ScheduledCICheck(BaseCheck):
 
 
 class StaleDocDetectionCheck(BaseCheck):
-    check_id = "stale_doc_detection"
+    check_id = "review.stale_doc_detection"
     name = "Stale Documentation Detection"
     description = "Checks for TODO/FIXME accumulation or doc freshness"
     max_points = 2.0
@@ -90,7 +90,7 @@ class StaleDocDetectionCheck(BaseCheck):
 
 
 class MRTemplateCheck(BaseCheck):
-    check_id = "mr_template"
+    check_id = "review.mr_template"
     name = "PR/MR Template"
     description = "Pull/merge request template enforcing description and test plan"
     max_points = 2.0
@@ -119,7 +119,7 @@ class MRTemplateCheck(BaseCheck):
 
 
 class AutomatedReviewCheck(BaseCheck):
-    check_id = "automated_review"
+    check_id = "review.automated_review"
     name = "Automated Code Review"
     description = "Bot reviewers or automated review tools configured"
     max_points = 2.0
@@ -153,7 +153,7 @@ class AutomatedReviewCheck(BaseCheck):
 
 
 class DocSyncCheckCheck(BaseCheck):
-    check_id = "doc_sync_check"
+    check_id = "review.doc_sync_check"
     name = "Documentation Sync Check"
     description = "CI check that related docs stay in sync"
     max_points = 2.0
