@@ -40,7 +40,7 @@ dev = [
     "pip-audit>=2.7",
     "hypothesis>=6.100",
     "lychee>=0.1",
-    "mutmut>=3.0",
+    "mutmut>=3.5.0",
     "pre-commit>=3.7",
 ]
 
