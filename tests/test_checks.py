@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from ai_harness_scorecard.repo_context import RepoContext
 
@@ -743,3 +745,140 @@ class TestFuzzTestingCheck:
         result = FuzzTestingCheck().run(context)
         assert not result.passed
         assert result.score == pytest.approx(0.0)
+
+
+FULL_PR_TEMPLATE = """\
+## What does this PR do?
+
+<!-- Describe the change -->
+
+## Testing
+
+<!-- How did you verify this change works? -->
+
+## Risk
+
+<!-- What could break? -->
+
+## How to revert
+
+<!-- Revert the merge commit, or turn off the flag -->
+"""
+
+MR_TEMPLATE_SECTION_PHRASES: dict[str, list[str]] = {
+    "Testing": ["test plan", "testing", "how was this tested", "how has this been tested"],
+    "Risk": ["risk", "risks", "impact", "risk assessment"],
+    "How to revert": ["revert", "rollback", "roll back", "rollback plan", "how to undo"],
+}
+
+MR_TEMPLATE_HEADING_STYLES = ["# {}", "## {}", "###### {}?", "**{}**", "- **{}:**", "{}:", "- {}:"]
+
+
+class TestMRTemplateCheck:
+    def test_mr_template_pass(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        context = _build_context(tmp_path, {".github/PULL_REQUEST_TEMPLATE.md": FULL_PR_TEMPLATE})
+        result = MRTemplateCheck().run(context)
+        assert result.passed
+        assert result.score == pytest.approx(2.0)
+        assert ".github/PULL_REQUEST_TEMPLATE.md" in result.evidence
+
+    def test_mr_template_pass_with_bold_and_label_lines(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        template = "**Test plan**\n\n- **Impact:** low / medium / high\n\nRollback plan:\n"
+        context = _build_context(tmp_path, {".github/pull_request_template.md": template})
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(2.0)
+
+    def test_mr_template_partial_missing_risk_and_revert(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        template = "## Summary\n\n## Testing\n\nIf this is risky, explain how to revert it.\n"
+        context = _build_context(tmp_path, {".github/PULL_REQUEST_TEMPLATE.md": template})
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(1.0)
+        assert "## Risk" in result.remediation
+        assert "## How to revert" in result.remediation
+        assert "Testing" not in result.remediation
+
+    def test_mr_template_partial_ignores_headings_in_html_comments(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        template = "## Testing\n\n<!--\n## Risk\n## How to revert\n-->\n"
+        context = _build_context(tmp_path, {".github/PULL_REQUEST_TEMPLATE.md": template})
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(1.0)
+
+    def test_mr_template_pass_if_any_gitlab_template_is_complete(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        context = _build_context(
+            tmp_path,
+            {
+                ".gitlab/merge_request_templates/Bug.md": "## Testing\n",
+                ".gitlab/merge_request_templates/Default.md": FULL_PR_TEMPLATE,
+            },
+        )
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(2.0)
+        assert "Default.md" in result.evidence
+
+    def test_mr_template_partial_reports_closest_template(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        context = _build_context(
+            tmp_path,
+            {
+                ".gitlab/merge_request_templates/A.md": "## Summary\n",
+                ".gitlab/merge_request_templates/B.md": "## Testing\n## Risk\n",
+            },
+        )
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(1.0)
+        assert "B.md" in result.remediation
+        assert result.remediation.endswith("## How to revert.")
+
+    def test_mr_template_partial_with_empty_gitlab_dir(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        (tmp_path / ".gitlab" / "merge_request_templates").mkdir(parents=True)
+        result = MRTemplateCheck().run(_build_context(tmp_path))
+        assert result.score == pytest.approx(1.0)
+        assert "## Testing, ## Risk, ## How to revert" in result.remediation
+
+    def test_mr_template_fail(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        result = MRTemplateCheck().run(_build_context(tmp_path))
+        assert not result.passed
+        assert result.score == pytest.approx(0.0)
+
+    @given(
+        section=st.sampled_from(sorted(MR_TEMPLATE_SECTION_PHRASES)),
+        style=st.sampled_from(MR_TEMPLATE_HEADING_STYLES),
+        data=st.data(),
+    )
+    def test_mr_template_heading_variants_detected(
+        self, section: str, style: str, data: st.DataObject
+    ) -> None:
+        from ai_harness_scorecard.checks.review import find_template_sections
+
+        phrase = data.draw(st.sampled_from(MR_TEMPLATE_SECTION_PHRASES[section]))
+        upper = data.draw(st.lists(st.booleans(), min_size=len(phrase), max_size=len(phrase)))
+        cased = "".join(c.upper() if u else c.lower() for c, u in zip(phrase, upper, strict=True))
+        assert section in find_template_sections(style.format(cased))
+
+    @given(
+        section=st.sampled_from(sorted(MR_TEMPLATE_SECTION_PHRASES)),
+        data=st.data(),
+    )
+    def test_mr_template_prose_mentions_not_detected(
+        self, section: str, data: st.DataObject
+    ) -> None:
+        from ai_harness_scorecard.checks.review import find_template_sections
+
+        phrase = data.draw(st.sampled_from(MR_TEMPLATE_SECTION_PHRASES[section]))
+        prose = f"Please describe the {phrase} in a sentence or two.\n<!-- ## {phrase} -->"
+        assert find_template_sections(prose) == frozenset()

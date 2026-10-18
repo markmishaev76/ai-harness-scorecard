@@ -5,6 +5,7 @@ Blog principle: 'Separate author from reviewer' + 'garbage collection agents.'
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from .base import BaseCheck
@@ -89,33 +90,104 @@ class StaleDocDetectionCheck(BaseCheck):
         )
 
 
+_HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+_HEADING_LINE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<label>.+?)\s*#*\s*$")
+_BOLD_LABEL_LINE = re.compile(r"^\s*(?:[-*+]\s+)?(?:\*\*|__)(?P<label>[^*_\n]+?)(?:\*\*|__)")
+_COLON_LABEL_LINE = re.compile(r"^\s*(?:[-*+]\s+)?(?P<label>[A-Za-z][A-Za-z0-9 /'&()?-]{0,48}):")
+
+TEMPLATE_SECTIONS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Testing", re.compile(r"\b(?:test plan|testing|tests?|tested)\b", re.IGNORECASE)),
+    ("Risk", re.compile(r"\b(?:risks?|impact)\b", re.IGNORECASE)),
+    (
+        "How to revert",
+        re.compile(r"\b(?:revert(?:ing)?|rollback|roll[ -]back|how to undo)\b", re.IGNORECASE),
+    ),
+)
+
+
+def _section_label(line: str) -> str | None:
+    for pattern in (_HEADING_LINE, _BOLD_LABEL_LINE, _COLON_LABEL_LINE):
+        match = pattern.match(line)
+        if match:
+            return match.group("label")
+    return None
+
+
+def find_template_sections(content: str) -> frozenset[str]:
+    """Return the names of TEMPLATE_SECTIONS that appear as a heading or label line.
+
+    Only markdown headings, lines starting with bold text, and short `Label:` lines count,
+    so a keyword mentioned in prose or inside an HTML comment does not.
+    """
+    found: set[str] = set()
+    for line in _HTML_COMMENT.sub("", content).splitlines():
+        label = _section_label(line)
+        if label is None:
+            continue
+        for name, pattern in TEMPLATE_SECTIONS:
+            if pattern.search(label):
+                found.add(name)
+    return frozenset(found)
+
+
 class MRTemplateCheck(BaseCheck):
     check_id = "review.mr_template"
     name = "PR/MR Template"
-    description = "Pull/merge request template enforcing description and test plan"
+    description = "Pull/merge request template with testing, risk, and revert sections"
     max_points = 2.0
-    source = "DORA 2025 - working in small batches"
+    source = (
+        "DORA 2025 - working in small batches; "
+        "Anthropic Claude Code team - How the Claude Code team does code review (2026)"
+    )
+
+    TEMPLATE_PATTERNS = (
+        ".github/pull_request_template.md",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".gitlab/merge_request_templates/*.md",
+        "docs/pull_request_template.md",
+    )
+    GITLAB_TEMPLATE_DIR = ".gitlab/merge_request_templates"
 
     def run(self, context: RepoContext) -> CheckResult:
-        templates = [
-            ".github/pull_request_template.md",
-            ".github/PULL_REQUEST_TEMPLATE.md",
-            ".gitlab/merge_request_templates/*.md",
-            "docs/pull_request_template.md",
-        ]
-        found = context.has_file(*templates)
-        if found:
-            return self.pass_result(f"PR/MR template found: {found}")
+        templates = list(dict.fromkeys(context.find_files(*self.TEMPLATE_PATTERNS)))
+        all_sections = [name for name, _ in TEMPLATE_SECTIONS]
 
-        if context.has_dir(".gitlab/merge_request_templates"):
-            return self.pass_result("GitLab MR template directory found")
+        if not templates:
+            if context.has_dir(self.GITLAB_TEMPLATE_DIR):
+                return self.partial_result(
+                    1.0,
+                    f"{self.GITLAB_TEMPLATE_DIR}/ found, but it contains no .md templates",
+                    self._remediation(f"{self.GITLAB_TEMPLATE_DIR}/Default.md", all_sections),
+                )
+            return self.fail_result(
+                "No PR/MR template found",
+                "Add .github/PULL_REQUEST_TEMPLATE.md or "
+                ".gitlab/merge_request_templates/Default.md with "
+                "sections for testing, risk, and how to revert.",
+            )
 
-        return self.fail_result(
-            "No PR/MR template found",
-            "Add .github/PULL_REQUEST_TEMPLATE.md or "
-            ".gitlab/merge_request_templates/Default.md with "
-            "sections for description, testing, and impact.",
+        best_path = templates[0]
+        best_missing = all_sections
+        for path in templates:
+            present = find_template_sections(context.read_file(path) or "")
+            missing = [name for name in all_sections if name not in present]
+            if not missing:
+                return self.pass_result(
+                    f"PR/MR template with testing, risk, and revert sections: {path}"
+                )
+            if len(missing) < len(best_missing):
+                best_path, best_missing = path, missing
+
+        return self.partial_result(
+            1.0,
+            f"PR/MR template found: {best_path} (missing: {', '.join(best_missing)})",
+            self._remediation(best_path, best_missing),
         )
+
+    @staticmethod
+    def _remediation(path: str, missing: list[str]) -> str:
+        headings = ", ".join(f"## {name}" for name in missing)
+        return f"Add these sections to {path}: {headings}."
 
 
 class AutomatedReviewCheck(BaseCheck):

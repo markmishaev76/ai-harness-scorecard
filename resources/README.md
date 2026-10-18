@@ -279,6 +279,17 @@ Each check in the scorecard cites a `source` field linking back to one of these 
 - **URL**: https://www.anthropic.com/news/our-framework-for-developing-safe-and-trustworthy-agents
 - **Relevance**: Emphasizes keeping humans in control, transparency in agent behavior, and customizable oversight. Supports our `agent_instructions` and `ai_usage_norms` checks.
 
+### Anthropic — "How the Claude Code Team Does Code Review" (Oct 2026)
+
+- **Type**: Engineering blog post
+- **URL**: https://claude.dev/blog/solving-code-review-at-anthropic/
+- **Relevance**: Describes layered review for agent-written code on the Claude Code team, where revert and incident rates are the guardrail for cutting human review time. Recommends adding "Testing", "Risk" and "How to revert" sections to the PR template.
+- **Key concepts**:
+  - The PR template asks how the change was tested and how to undo it; the requester signs off
+  - Human approvals scale with a risk tier set by the change, not the author
+  - Small, reversible changes (flags, reverts, staged releases) make mistakes cheap to undo
+- **Checks supported**: `mr_template`
+
 ### Microsoft Nudge Study — Accelerating Code Reviews (2024)
 
 - **Type**: Industry research
@@ -432,6 +443,7 @@ Each check in the scorecard cites a `source` field linking back to one of these 
 | Google Engineering Practices | `code_review_required`, `small_batch_enforcement` |
 | Anthropic (Claude best practices) | `agent_instructions`, `ai_usage_norms` |
 | Anthropic (safe agents framework) | `agent_instructions`, `ai_usage_norms` |
+| Anthropic (Claude Code code review) | `mr_template` |
 | Microsoft Nudge Study | `code_review_required`, `automated_review` |
 | Blog: 80% problem | `unsafe_code_policy`, `fuzz_testing`, `security_critical_marking` |
 | Blog: cognitive offloading | `multiple_approach_culture` |

@@ -21,3 +21,11 @@
 ## Testing
 
 <!-- How did you verify this change works? -->
+
+## Risk
+
+<!-- What could break, and which repos' scores could change? -->
+
+## How to revert
+
+<!-- How to undo this change if it causes problems (e.g. revert the merge commit) -->
