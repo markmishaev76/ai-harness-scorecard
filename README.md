@@ -32,7 +32,7 @@ ai-harness-scorecard assess . --format json
 Five categories, 32 checks, each grounded in published research:
 
 ### 1. Architectural Documentation (20%)
-Architecture docs, agent instructions, ADRs, module boundary constraints, API documentation.
+Architecture docs, agent instructions, harness docs, ADRs, module boundary constraints, API documentation.
 
 ### 2. Mechanical Constraints (25%)
 CI pipeline, linter/formatter enforcement, type safety, dependency auditing, conventional commits, unsafe code policies.
@@ -67,7 +67,7 @@ Good foundation. Some gaps in enforcement or feedback loops.
 ┌──────────────────────────┬────────┬───────┬────────┐
 │ Category                 │ Weight │ Score │ Checks │
 ├──────────────────────────┼────────┼───────┼────────┤
-│ Architectural Docs       │    20% │   60% │    3/5 │
+│ Architectural Docs       │    20% │   60% │    3/6 │
 │ Mechanical Constraints   │    25% │   91% │    6/7 │
 │ Testing & Stability      │    25% │   72% │    5/9 │
 │ Review & Drift           │    15% │   60% │    3/6 │

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from ai_harness_scorecard.repo_context import RepoContext
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def _build_context(tmp_path: Path, files: dict[str, str] | None = None) -> RepoContext:
@@ -288,6 +290,89 @@ class TestAgentInstructionsCheck:
         context = _build_context(tmp_path)
         result = AgentInstructionsCheck().run(context)
         assert not result.passed
+
+
+class TestHarnessDocsCheck:
+    def test_harness_docs_pass(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(
+            tmp_path,
+            {
+                "docs/development.md": (
+                    "# Development\n\n"
+                    "## CI pipeline\n\n"
+                    "The quality gates run lint, type checks, security scans, and tests. "
+                    "To add a new check, update the CI workflow and document the new gate here."
+                )
+            },
+        )
+        result = HarnessDocsCheck().run(context)
+        assert result.check_id == "documentation.harness_docs"
+        assert result.passed
+        assert result.score == pytest.approx(2.0)
+        assert "quality pipeline" in result.evidence.lower()
+
+    def test_harness_docs_pass_partial(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(tmp_path, {"CONTRIBUTING.md": "# Contributing\n\nWelcome."})
+        result = HarnessDocsCheck().run(context)
+        assert result.passed
+        assert result.score == pytest.approx(1.0)
+        assert "contributing.md" in result.evidence.lower()
+
+    def test_harness_docs_fail(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        context = _build_context(tmp_path, {"README.md": "# Project"})
+        result = HarnessDocsCheck().run(context)
+        assert not result.passed
+        assert result.score == pytest.approx(0.0)
+        assert "quality pipeline" in result.remediation.lower()
+
+    @given(
+        words=st.sampled_from(
+            [
+                ("ci", "pipeline"),
+                ("ci", "workflow"),
+                ("quality", "gate"),
+                ("quality", "gates"),
+                ("development", "workflow"),
+                ("run", "in", "ci", "and", "must", "pass"),
+            ]
+        ),
+        separator=st.sampled_from([" ", "  ", "\t"]),
+        uppercase=st.booleans(),
+    )
+    @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+    def test_harness_docs_pass_variants(
+        self,
+        tmp_path: Path,
+        words: tuple[str, ...],
+        separator: str,
+        uppercase: bool,
+    ) -> None:
+        from ai_harness_scorecard.checks.documentation import HarnessDocsCheck
+
+        phrase = separator.join(words)
+        if uppercase:
+            phrase = phrase.upper()
+
+        context = _build_context(
+            tmp_path,
+            {
+                "docs/development.md": (
+                    "# Development\n\n"
+                    f"## {phrase}\n\n"
+                    "Document the checks contributors run before merging changes."
+                )
+            },
+        )
+        result = HarnessDocsCheck().run(context)
+
+        assert result.passed
+        assert result.score == pytest.approx(2.0)
 
 
 class TestLinterEnforcementCheck:

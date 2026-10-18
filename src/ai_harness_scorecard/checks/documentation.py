@@ -5,6 +5,7 @@ Blog principle: 'Document architecture in the repo, not in people's heads.'
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from .base import BaseCheck
@@ -63,6 +64,64 @@ class AgentInstructionsCheck(BaseCheck):
             "No AI agent instruction files found",
             "Create CLAUDE.md or AGENTS.md with project context, code style, "
             "and constraints so AI agents produce consistent output.",
+        )
+
+
+class HarnessDocsCheck(BaseCheck):
+    check_id = "documentation.harness_docs"
+    name = "Harness Documentation"
+    description = "Quality pipeline, CI stages, or quality gates documented for contributors"
+    max_points = 2.0
+    source = "Morris 2026 - harness engineering"
+
+    DOCUMENTATION_FILES = [
+        "contributing.md",
+        "docs/*.md",
+        "docs/*.rst",
+        "doc/*.md",
+        "doc/*.rst",
+    ]
+
+    PIPELINE_PATTERNS = [
+        r"\bci\s+(pipeline|stages?|workflow)\b",
+        r"\bquality\s+gates?\b",
+        r"\bpre-commit\b",
+        r"\bdevelopment\s+workflow\b",
+        r"how\s+to\s+add\s+(a\s+)?(new\s+)?(check|quality\s+gate|ci\s+job)",
+        r"run\s+in\s+ci\s+and\s+must\s+pass",
+    ]
+
+    COMMENTED_CI_PATTERN = r"(?m)^\s*#.*\b(ci|quality|check|lint|test|type|gate|workflow)\b"
+
+    def run(self, context: RepoContext) -> CheckResult:
+        for pattern in self.PIPELINE_PATTERNS:
+            found = context.search_any_file(self.DOCUMENTATION_FILES, pattern)
+            if found:
+                return self.pass_result(f"Quality pipeline documented in {found}")
+
+        contributing = context.has_file("contributing.md")
+        if contributing:
+            return self.partial_result(
+                1.0,
+                f"Found {contributing}, but no documented quality pipeline",
+                "Document CI stages, quality gates, or how to add a new quality check.",
+            )
+
+        if context.ci_configs and re.search(
+            self.COMMENTED_CI_PATTERN,
+            context.ci_raw_content(),
+            re.IGNORECASE,
+        ):
+            return self.partial_result(
+                1.0,
+                "CI config comments mention quality checks",
+                "Move CI stage and quality gate guidance into CONTRIBUTING.md or docs/.",
+            )
+
+        return self.fail_result(
+            "No quality pipeline documentation found",
+            "Document the quality pipeline, CI stages, quality gates, or how to add a "
+            "new check in CONTRIBUTING.md or docs/.",
         )
 
 
@@ -189,6 +248,7 @@ class APIContractsCheck(BaseCheck):
 DOCUMENTATION_CHECKS: list[BaseCheck] = [
     ArchitectureDocCheck(),
     AgentInstructionsCheck(),
+    HarnessDocsCheck(),
     ADRPresenceCheck(),
     ModuleBoundaryDocsCheck(),
     APIContractsCheck(),
