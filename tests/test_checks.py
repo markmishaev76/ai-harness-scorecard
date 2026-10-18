@@ -811,6 +811,27 @@ class TestMRTemplateCheck:
         result = MRTemplateCheck().run(context)
         assert result.score == pytest.approx(1.0)
 
+    @pytest.mark.parametrize("fence", ["```", "~~~", "````markdown"])
+    def test_mr_template_partial_ignores_headings_in_code_fences(
+        self, tmp_path: Path, fence: str
+    ) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        closing = fence.rstrip("markdown")
+        template = f"## Testing\n\n{fence}\n## Risk\n## How to revert\n{closing}\n"
+        context = _build_context(tmp_path, {".github/PULL_REQUEST_TEMPLATE.md": template})
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(1.0)
+        assert "## Risk" in result.remediation
+
+    def test_mr_template_pass_with_sections_after_code_fence(self, tmp_path: Path) -> None:
+        from ai_harness_scorecard.checks.review import MRTemplateCheck
+
+        template = "## Testing\n\n```bash\npytest\n```\n\n## Risk\n\n## How to revert\n"
+        context = _build_context(tmp_path, {".github/PULL_REQUEST_TEMPLATE.md": template})
+        result = MRTemplateCheck().run(context)
+        assert result.score == pytest.approx(2.0)
+
     def test_mr_template_pass_if_any_gitlab_template_is_complete(self, tmp_path: Path) -> None:
         from ai_harness_scorecard.checks.review import MRTemplateCheck
 

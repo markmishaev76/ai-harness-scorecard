@@ -91,6 +91,7 @@ class StaleDocDetectionCheck(BaseCheck):
 
 
 _HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+_CODE_FENCE = re.compile(r"^\s{0,3}(?P<fence>`{3,}|~{3,})")
 _HEADING_LINE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<label>.+?)\s*#*\s*$")
 _BOLD_LABEL_LINE = re.compile(r"^\s*(?:[-*+]\s+)?(?:\*\*|__)(?P<label>[^*_\n]+?)(?:\*\*|__)")
 _COLON_LABEL_LINE = re.compile(r"^\s*(?:[-*+]\s+)?(?P<label>[A-Za-z][A-Za-z0-9 /'&()?-]{0,48}):")
@@ -113,14 +114,35 @@ def _section_label(line: str) -> str | None:
     return None
 
 
+def _outside_code_fences(lines: list[str]) -> list[str]:
+    kept: list[str] = []
+    open_fence: str | None = None
+    for line in lines:
+        match = _CODE_FENCE.match(line)
+        if open_fence is None:
+            if match:
+                open_fence = match.group("fence")
+            else:
+                kept.append(line)
+        elif (
+            match
+            and match.group("fence")[0] == open_fence[0]
+            and len(match.group("fence")) >= len(open_fence)
+            and not line.strip().lstrip(open_fence[0])
+        ):
+            open_fence = None
+    return kept
+
+
 def find_template_sections(content: str) -> frozenset[str]:
     """Return the names of TEMPLATE_SECTIONS that appear as a heading or label line.
 
     Only markdown headings, lines starting with bold text, and short `Label:` lines count,
-    so a keyword mentioned in prose or inside an HTML comment does not.
+    so a keyword mentioned in prose, inside an HTML comment, or inside a fenced code block
+    does not.
     """
     found: set[str] = set()
-    for line in _HTML_COMMENT.sub("", content).splitlines():
+    for line in _outside_code_fences(_HTML_COMMENT.sub("", content).splitlines()):
         label = _section_label(line)
         if label is None:
             continue
